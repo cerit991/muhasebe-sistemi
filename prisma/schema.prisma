@@ -1,0 +1,131 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+// Müşteri/Tedarikçi
+model Customer {
+  id        String    @id @default(cuid())
+  code      String    @unique
+  name      String
+  type      String    // customer or supplier
+  taxNumber String
+  phone     String
+  balance   Float     @default(0)
+  invoices  Invoice[]
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+}
+
+// Ürün/Stok
+model Product {
+  id          String           @id @default(cuid())
+  code        String           @unique
+  name        String
+  unit        String
+  price       Float            @default(0)
+  vatRate     Float            @default(0)
+  quantity    Float            @default(0)
+  minQuantity Float            @default(0)
+  category    String
+  invoiceItems InvoiceItem[]
+  ingredients  MenuIngredient[]
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+}
+
+// Fatura
+model Invoice {
+  id          String        @id @default(cuid())
+  number      String        @unique
+  type        String        // sale or purchase
+  date        DateTime
+  customerId  String
+  customer    Customer      @relation(fields: [customerId], references: [id])
+  items       InvoiceItem[]
+  subtotal    Float
+  vatTotal    Float
+  total       Float
+  status      String        @default("draft") // draft, pending, paid
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  @@index([customerId])
+}
+
+// Fatura Kalemleri
+model InvoiceItem {
+  id        String   @id @default(cuid())
+  invoiceId String
+  productId String
+  quantity  Float
+  price     Float
+  vatRate   Float
+  discount  Float    @default(0)
+  total     Float
+  invoice   Invoice  @relation(fields: [invoiceId], references: [id])
+  product   Product  @relation(fields: [productId], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([invoiceId])
+  @@index([productId])
+}
+
+// Hesap Defteri
+model LedgerEntry {
+  id          String   @id @default(cuid())
+  date        DateTime
+  type        String   // income or expense
+  category    String
+  description String
+  amount      Float
+  paymentType String?  // cash or credit_card (for income only)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+// Sistem Ayarları
+model Settings {
+  id            String   @id @default(cuid())
+  companyName   String
+  email         String?
+  phone         String?
+  address       String?
+  taxNumber     String?
+  darkMode      Boolean  @default(false)
+  notifications Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+// Menü Kalemi
+model MenuItem {
+  id          String           @id @default(cuid())
+  code        String           @unique
+  name        String
+  description String?
+  price       Float            @default(0)
+  ingredients MenuIngredient[]
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+}
+
+// Menü Malzemeleri
+model MenuIngredient {
+  id          String    @id @default(cuid())
+  menuItemId  String
+  productId   String
+  quantity    Float
+  menuItem    MenuItem  @relation(fields: [menuItemId], references: [id])
+  product     Product   @relation(fields: [productId], references: [id])
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([menuItemId])
+  @@index([productId])
+}
