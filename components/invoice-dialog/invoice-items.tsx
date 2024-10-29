@@ -54,7 +54,7 @@ export function InvoiceItems({
       <div className="flex justify-between items-center mb-4">
         <h3 className="text-lg font-medium">Items</h3>
         <Button onClick={onAddItem}>
-          <Plus className="mr-2 h-4 w-4" /> Add Item
+          <Plus className="mr-2 h-4 w-4" /> Ürün Ekle
         </Button>
       </div>
 
@@ -62,12 +62,12 @@ export function InvoiceItems({
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead className="w-[35%] min-w-[200px]">Product</TableHead>
-              <TableHead className="w-[10%] min-w-[80px]">Quantity</TableHead>
-              <TableHead className="w-[10%] min-w-[80px]">Unit</TableHead>
-              <TableHead className="w-[12%] min-w-[100px]">Unit Price</TableHead>
-              <TableHead className="w-[10%] min-w-[80px]">Discount %</TableHead>
-              <TableHead className="w-[8%] min-w-[70px]">VAT %</TableHead>
+              <TableHead className="w-[35%] min-w-[200px]">Stok Adı</TableHead>
+              <TableHead className="w-[10%] min-w-[80px]">Miktar</TableHead>
+              <TableHead className="w-[10%] min-w-[80px]">Birim</TableHead>
+              <TableHead className="w-[12%] min-w-[100px]">Birim Fiyat</TableHead>
+              <TableHead className="w-[10%] min-w-[80px]">İskonto %</TableHead>
+              <TableHead className="w-[8%] min-w-[70px]">KDV %</TableHead>
               <TableHead className="w-[10%] min-w-[100px]">Total</TableHead>
               <TableHead className="w-[5%] min-w-[40px]"></TableHead>
             </TableRow>

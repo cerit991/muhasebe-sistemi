@@ -77,26 +77,26 @@ export default function InvoicesPage() {
   return (
     <div className="container mx-auto py-10">
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold">Invoices</h1>
+        <h1 className="text-3xl font-bold">Faturalar</h1>
         <div className="flex space-x-2">
           <Select value={invoiceType} onValueChange={(value: "sale" | "purchase") => setInvoiceType(value)}>
             <SelectTrigger className="w-[180px]">
               <SelectValue placeholder="Select invoice type" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="sale">Sales Invoice</SelectItem>
-              <SelectItem value="purchase">Purchase Invoice</SelectItem>
+              <SelectItem value="sale">Satış Faturası</SelectItem>
+              <SelectItem value="purchase">Alış Faturası</SelectItem>
             </SelectContent>
           </Select>
           <Button onClick={() => setIsDialogOpen(true)}>
-            Create New Invoice
+            Yeni Fatura Oluştur
           </Button>
         </div>
       </div>
 
       <div className="flex items-center py-4">
         <Input
-          placeholder="Search invoices..."
+          placeholder="Fatura ara ..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
           className="max-w-sm"
@@ -107,12 +107,12 @@ export default function InvoicesPage() {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Invoice No</TableHead>
-              <TableHead>Type</TableHead>
-              <TableHead>Customer/Supplier</TableHead>
-              <TableHead>Date</TableHead>
-              <TableHead className="text-right">Amount</TableHead>
-              <TableHead>Status</TableHead>
+              <TableHead>Fatura NO:</TableHead>
+              <TableHead>Alış/Satış</TableHead>
+              <TableHead>Müşteri/Tedarikçi</TableHead>
+              <TableHead>Tarih</TableHead>
+              <TableHead className="text-right">Tutar</TableHead>
+              <TableHead>Stat</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>

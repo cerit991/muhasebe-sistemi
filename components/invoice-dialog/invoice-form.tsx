@@ -89,7 +89,7 @@ export function InvoiceForm({
         <div className="space-y-4">
           <div>
             <Label htmlFor="customer" className="text-sm font-medium mb-1.5 block">
-              Customer/Supplier
+              Customer/Tedarikçi
             </Label>
             <Select onValueChange={onCustomerSelect} value={formData.customerId}>
               <SelectTrigger id="customer" className="w-full">
@@ -126,7 +126,7 @@ export function InvoiceForm({
       {formData.customerName && (
         <div className="bg-muted/50 p-4 rounded-lg">
           <div className="text-sm">
-            <span className="font-medium">Selected Customer: </span>
+            <span className="font-medium">Cari Seç: </span>
             {formData.customerName}
           </div>
         </div>

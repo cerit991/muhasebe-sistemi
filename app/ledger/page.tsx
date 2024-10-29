@@ -24,6 +24,10 @@ interface LedgerEntry {
   type: string
   category: string
   amount: number
+  customer?: {
+    name: string
+    code: string
+  }
 }
 
 export default function LedgerPage() {
@@ -61,7 +65,8 @@ export default function LedgerPage() {
 
   const filteredEntries = entries.filter(entry =>
     entry.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    entry.category.toLowerCase().includes(searchTerm.toLowerCase())
+    entry.category.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    entry.customer?.name.toLowerCase().includes(searchTerm.toLowerCase())
   )
 
   const totalIncome = entries
@@ -117,6 +122,7 @@ export default function LedgerPage() {
             <TableRow>
               <TableHead>Tarih</TableHead>
               <TableHead>Açıklama</TableHead>
+              <TableHead>Cari</TableHead>
               <TableHead>Kategori</TableHead>
               <TableHead>Tür</TableHead>
               <TableHead className="text-right">Tutar</TableHead>
@@ -125,17 +131,20 @@ export default function LedgerPage() {
           <TableBody>
             {loading ? (
               <TableRow>
-                <TableCell colSpan={5} className="text-center">Yükleniyor...</TableCell>
+                <TableCell colSpan={6} className="text-center">Yükleniyor...</TableCell>
               </TableRow>
             ) : filteredEntries.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={5} className="text-center">Kayıt bulunamadı</TableCell>
+                <TableCell colSpan={6} className="text-center">Kayıt bulunamadı</TableCell>
               </TableRow>
             ) : (
               filteredEntries.map((entry) => (
                 <TableRow key={entry.id}>
                   <TableCell>{new Date(entry.date).toLocaleDateString("tr-TR")}</TableCell>
                   <TableCell>{entry.description}</TableCell>
+                  <TableCell>
+                    {entry.customer ? `${entry.customer.name} (${entry.customer.code})` : "-"}
+                  </TableCell>
                   <TableCell>{entry.category}</TableCell>
                   <TableCell>
                     <Badge variant={entry.type === "income" ? "default" : "destructive"}>

@@ -66,9 +66,11 @@ CREATE TABLE "LedgerEntry" (
     "category" TEXT NOT NULL,
     "description" TEXT NOT NULL,
     "amount" REAL NOT NULL,
-    "paymentType" TEXT,
+    "paymentType" TEXT NOT NULL,
+    "customerId" TEXT,
     "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updatedAt" DATETIME NOT NULL
+    "updatedAt" DATETIME NOT NULL,
+    CONSTRAINT "LedgerEntry_customerId_fkey" FOREIGN KEY ("customerId") REFERENCES "Customer" ("id") ON DELETE SET NULL ON UPDATE CASCADE
 );
 
 -- CreateTable
@@ -124,6 +126,9 @@ CREATE INDEX "InvoiceItem_invoiceId_idx" ON "InvoiceItem"("invoiceId");
 
 -- CreateIndex
 CREATE INDEX "InvoiceItem_productId_idx" ON "InvoiceItem"("productId");
+
+-- CreateIndex
+CREATE INDEX "LedgerEntry_customerId_idx" ON "LedgerEntry"("customerId");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "MenuItem_code_key" ON "MenuItem"("code");

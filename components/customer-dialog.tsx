@@ -102,16 +102,16 @@ export function CustomerDialog({ open, onOpenChange, onSuccess }: CustomerDialog
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>New Customer</DialogTitle>
+          <DialogTitle>Yeni Cari Oluştur</DialogTitle>
           <DialogDescription>
-            Fill in the details to create a new customer.
+            Cari isminin detaylarını belirtiniz.
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit}>
           <div className="grid gap-4 py-4">
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="name" className="text-right">
-                Name
+                Cari İsim
               </Label>
               <Input
                 id="name"
@@ -123,7 +123,7 @@ export function CustomerDialog({ open, onOpenChange, onSuccess }: CustomerDialog
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="taxNumber" className="text-right">
-                Tax Number
+                Vergi Numarası 
               </Label>
               <Input
                 id="taxNumber"
@@ -135,7 +135,7 @@ export function CustomerDialog({ open, onOpenChange, onSuccess }: CustomerDialog
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="phone" className="text-right">
-                Phone
+                Telefon
               </Label>
               <Input
                 id="phone"
@@ -147,7 +147,7 @@ export function CustomerDialog({ open, onOpenChange, onSuccess }: CustomerDialog
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="type" className="text-right">
-                Type
+                Cari Türü
               </Label>
               <Select
                 value={formData.type}
@@ -157,15 +157,15 @@ export function CustomerDialog({ open, onOpenChange, onSuccess }: CustomerDialog
                   <SelectValue placeholder="Select type" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="customer">Customer</SelectItem>
-                  <SelectItem value="supplier">Supplier</SelectItem>
+                  <SelectItem value="customer">Müşteri</SelectItem>
+                  <SelectItem value="supplier">Tedarikçi</SelectItem>
                 </SelectContent>
               </Select>
             </div>
           </div>
           <DialogFooter>
             <Button type="submit" disabled={loading}>
-              {loading ? "Saving..." : "Save"}
+              {loading ? "Saving..." : "Kaydet"}
             </Button>
           </DialogFooter>
         </form>

@@ -291,7 +291,7 @@ export function InvoiceDialog({ open, onOpenChange, type, onSuccess }: InvoiceDi
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-[1000px] max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-[1200px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>
             {type === "purchase" ? "Purchase Invoice" : "Sales Invoice"}
@@ -302,7 +302,7 @@ export function InvoiceDialog({ open, onOpenChange, type, onSuccess }: InvoiceDi
           {/* Invoice Form */}
           <div className="space-y-4">
             <div className="grid grid-cols-3 items-center gap-4">
-              <Label className="text-right">Invoice No</Label>
+              <Label className="text-right">Fatura NO:</Label>
               <Input
                 required
                 value={formData.invoiceNumber}
@@ -312,7 +312,7 @@ export function InvoiceDialog({ open, onOpenChange, type, onSuccess }: InvoiceDi
             </div>
 
             <div className="grid grid-cols-3 items-center gap-4">
-              <Label className="text-right">Invoice Date</Label>
+              <Label className="text-right">Fatura Tarihi</Label>
               <div className="col-span-2">
                 <Popover>
                   <PopoverTrigger asChild>
@@ -324,7 +324,7 @@ export function InvoiceDialog({ open, onOpenChange, type, onSuccess }: InvoiceDi
                       )}
                     >
                       <CalendarIcon className="mr-2 h-4 w-4" />
-                      {formData.invoiceDate ? format(formData.invoiceDate, "PPP") : <span>Select date</span>}
+                      {formData.invoiceDate ? format(formData.invoiceDate, "PPP") : <span>Tarih Seç</span>}
                     </Button>
                   </PopoverTrigger>
                   <PopoverContent className="w-auto p-0">
@@ -340,10 +340,10 @@ export function InvoiceDialog({ open, onOpenChange, type, onSuccess }: InvoiceDi
             </div>
 
             <div className="grid grid-cols-3 items-center gap-4">
-              <Label className="text-right">Customer</Label>
+              <Label className="text-right">Cari</Label>
               <Select onValueChange={handleCustomerSelect} value={formData.customerId}>
                 <SelectTrigger className="col-span-2">
-                  <SelectValue placeholder="Select customer" />
+                  <SelectValue placeholder="Cari Seç" />
                 </SelectTrigger>
                 <SelectContent>
                   {customers.map((customer) => (
@@ -356,7 +356,7 @@ export function InvoiceDialog({ open, onOpenChange, type, onSuccess }: InvoiceDi
             </div>
 
             <div className="grid grid-cols-3 items-center gap-4">
-              <Label className="text-right">Tax Number</Label>
+              <Label className="text-right">Vergi NO:</Label>
               <Input
                 value={formData.customerTaxNumber}
                 readOnly
@@ -368,7 +368,7 @@ export function InvoiceDialog({ open, onOpenChange, type, onSuccess }: InvoiceDi
           {/* Invoice Items */}
           <div className="border rounded-md p-4">
             <div className="flex justify-between items-center mb-4">
-              <h3 className="text-lg font-medium">Items</h3>
+              <h3 className="text-lg font-medium">Stoklar</h3>
               <Button onClick={addNewItem}>
                 <Plus className="mr-2 h-4 w-4" /> Add Item
               </Button>
@@ -378,12 +378,12 @@ export function InvoiceDialog({ open, onOpenChange, type, onSuccess }: InvoiceDi
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead className="min-w-[200px]">Product</TableHead>
-                    <TableHead>Quantity</TableHead>
-                    <TableHead>Unit</TableHead>
-                    <TableHead>Unit Price</TableHead>
-                    <TableHead>Discount %</TableHead>
-                    <TableHead>VAT %</TableHead>
+                    <TableHead className="min-w-[150px]">Ürün</TableHead>
+                    <TableHead>Miktar</TableHead>
+                    <TableHead>Birim</TableHead>
+                    <TableHead>Birim Fiyatı</TableHead>
+                    <TableHead>İskonto %</TableHead>
+                    <TableHead>KDV %</TableHead>
                     <TableHead>Total</TableHead>
                     <TableHead></TableHead>
                   </TableRow>
@@ -503,8 +503,8 @@ export function InvoiceDialog({ open, onOpenChange, type, onSuccess }: InvoiceDi
             </div>
 
             <div className="mt-4 flex flex-col items-end space-y-2">
-              <div className="text-sm">Subtotal: ₺{totals.subtotal.toLocaleString('tr-TR', { minimumFractionDigits: 2 })}</div>
-              <div className="text-sm">VAT Total: ₺{totals.vatTotal.toLocaleString('tr-TR', { minimumFractionDigits: 2 })}</div>
+              <div className="text-sm">Kdv Hariç: ₺{totals.subtotal.toLocaleString('tr-TR', { minimumFractionDigits: 2 })}</div>
+              <div className="text-sm">KDV toplam: ₺{totals.vatTotal.toLocaleString('tr-TR', { minimumFractionDigits: 2 })}</div>
               <div className="text-lg font-bold">Total: ₺{totals.total.toLocaleString('tr-TR', { minimumFractionDigits: 2 })}</div>
             </div>
           </div>
@@ -512,10 +512,10 @@ export function InvoiceDialog({ open, onOpenChange, type, onSuccess }: InvoiceDi
 
         <div className="flex justify-end space-x-2 mt-4">
           <Button variant="outline" onClick={() => onOpenChange(false)}>
-            Cancel
+            İptal
           </Button>
           <Button onClick={handleSubmit} disabled={loading}>
-            {loading ? "Saving..." : "Save"}
+            {loading ? "Saving..." : "Kaydet"}
           </Button>
         </div>
       </DialogContent>

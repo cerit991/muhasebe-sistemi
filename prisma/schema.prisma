@@ -8,48 +8,49 @@ datasource db {
 }
 
 model Customer {
-  id        String    @id @default(cuid())
-  code      String    @unique
-  name      String
-  type      String    // customer or supplier
-  taxNumber String
-  phone     String
-  balance   Float     @default(0)
-  invoices  Invoice[]
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
+  id            String        @id @default(cuid())
+  code          String        @unique
+  name          String
+  type          String        // customer or supplier
+  taxNumber     String
+  phone         String
+  balance       Float         @default(0)
+  invoices      Invoice[]
+  ledgerEntries LedgerEntry[]
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
 }
 
 model Product {
-  id          String           @id @default(cuid())
-  code        String           @unique
-  name        String
-  unit        String
-  price       Float            @default(0)
-  vatRate     Float            @default(0)
-  quantity    Float            @default(0)
-  minQuantity Float            @default(0)
-  category    String
+  id           String           @id @default(cuid())
+  code         String           @unique
+  name         String
+  unit         String
+  price        Float            @default(0)
+  vatRate      Float            @default(0)
+  quantity     Float            @default(0)
+  minQuantity  Float            @default(0)
+  category     String
   invoiceItems InvoiceItem[]
   ingredients  MenuIngredient[]
-  createdAt   DateTime         @default(now())
-  updatedAt   DateTime         @updatedAt
+  createdAt    DateTime         @default(now())
+  updatedAt    DateTime         @updatedAt
 }
 
 model Invoice {
-  id          String        @id @default(cuid())
-  number      String        @unique
-  type        String        // sale or purchase
-  date        DateTime
-  customerId  String
-  customer    Customer      @relation(fields: [customerId], references: [id])
-  items       InvoiceItem[]
-  subtotal    Float
-  vatTotal    Float
-  total       Float
-  status      String        @default("draft") // draft, pending, paid
-  createdAt   DateTime      @default(now())
-  updatedAt   DateTime      @updatedAt
+  id         String        @id @default(cuid())
+  number     String        @unique
+  type       String        // sale or purchase
+  date       DateTime
+  customerId String
+  customer   Customer      @relation(fields: [customerId], references: [id])
+  items      InvoiceItem[]
+  subtotal   Float
+  vatTotal   Float
+  total      Float
+  status     String        @default("draft") // draft, pending, paid
+  createdAt  DateTime      @default(now())
+  updatedAt  DateTime      @updatedAt
 
   @@index([customerId])
 }
@@ -73,15 +74,19 @@ model InvoiceItem {
 }
 
 model LedgerEntry {
-  id          String   @id @default(cuid())
+  id          String    @id @default(cuid())
   date        DateTime
-  type        String   // income or expense
+  type        String    // income or expense
   category    String
   description String
   amount      Float
-  paymentType String?  // cash or credit_card (for income only)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  paymentType String    // cash, credit_card, bank_transfer, check, promissory_note
+  customerId  String?
+  customer    Customer? @relation(fields: [customerId], references: [id])
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([customerId])
 }
 
 model Settings {
@@ -108,14 +113,14 @@ model MenuItem {
 }
 
 model MenuIngredient {
-  id          String    @id @default(cuid())
-  menuItemId  String
-  productId   String
-  quantity    Float
-  menuItem    MenuItem  @relation(fields: [menuItemId], references: [id])
-  product     Product   @relation(fields: [productId], references: [id])
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  id         String    @id @default(cuid())
+  menuItemId String
+  productId  String
+  quantity   Float
+  menuItem   MenuItem  @relation(fields: [menuItemId], references: [id])
+  product    Product   @relation(fields: [productId], references: [id])
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
 
   @@index([menuItemId])
   @@index([productId])

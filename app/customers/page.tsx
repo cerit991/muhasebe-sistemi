@@ -15,6 +15,7 @@ import { CustomerDialog } from "@/components/customer-dialog"
 import { Badge } from "@/components/ui/badge"
 import { useApi } from "@/lib/hooks/use-api"
 import { useToast } from "@/components/ui/use-toast"
+import { useRouter } from "next/navigation"
 
 interface Customer {
   id: string
@@ -27,6 +28,7 @@ interface Customer {
 }
 
 export default function CustomersPage() {
+  const router = useRouter()
   const [customers, setCustomers] = useState<Customer[]>([])
   const [searchTerm, setSearchTerm] = useState("")
   const [isDialogOpen, setIsDialogOpen] = useState(false)
@@ -92,20 +94,21 @@ export default function CustomersPage() {
               <TableHead>Vergi No</TableHead>
               <TableHead>Telefon</TableHead>
               <TableHead className="text-right">Bakiye</TableHead>
+              <TableHead></TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {loading ? (
               <TableRow>
-                <TableCell colSpan={6} className="text-center">Yükleniyor...</TableCell>
+                <TableCell colSpan={7} className="text-center">Yükleniyor...</TableCell>
               </TableRow>
             ) : filteredCustomers.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={6} className="text-center">Kayıt bulunamadı</TableCell>
+                <TableCell colSpan={7} className="text-center">Kayıt bulunamadı</TableCell>
               </TableRow>
             ) : (
               filteredCustomers.map((customer) => (
-                <TableRow key={customer.id}>
+                <TableRow key={customer.id} className="cursor-pointer hover:bg-muted/50">
                   <TableCell>{customer.code}</TableCell>
                   <TableCell className="font-medium">{customer.name}</TableCell>
                   <TableCell>
@@ -115,8 +118,18 @@ export default function CustomersPage() {
                   </TableCell>
                   <TableCell>{customer.taxNumber}</TableCell>
                   <TableCell>{customer.phone}</TableCell>
-                  <TableCell className="text-right">
+                  <TableCell className={`text-right font-medium ${
+                    customer.balance >= 0 ? 'text-green-600' : 'text-red-600'
+                  }`}>
                     ₺{customer.balance.toLocaleString('tr-TR', { minimumFractionDigits: 2 })}
+                  </TableCell>
+                  <TableCell>
+                    <Button
+                      variant="ghost"
+                      onClick={() => router.push(`/customers/${customer.id}/statement`)}
+                    >
+                      Ekstre
+                    </Button>
                   </TableCell>
                 </TableRow>
               ))

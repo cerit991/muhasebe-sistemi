@@ -201,16 +201,16 @@ export function MenuItemDialog({ open, onOpenChange, onSuccess }: MenuItemDialog
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-[1000px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>New Menu Item</DialogTitle>
+          <DialogTitle>Yeni Menü Kalemi</DialogTitle>
           <DialogDescription>
-            Enter menu item details and ingredients.
+            Menu cost için reçete belirleyin.
           </DialogDescription>
         </DialogHeader>
 
         <div className="grid gap-4">
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <Label htmlFor="name">Menu Name</Label>
+              <Label htmlFor="name">Menudeki İsim</Label>
               <Input
                 id="name"
                 value={formData.name}
@@ -219,7 +219,7 @@ export function MenuItemDialog({ open, onOpenChange, onSuccess }: MenuItemDialog
               />
             </div>
             <div>
-              <Label htmlFor="price">Selling Price</Label>
+              <Label htmlFor="price">Satış Fiyatı</Label>
               <Input
                 id="price"
                 type="number"
@@ -232,7 +232,7 @@ export function MenuItemDialog({ open, onOpenChange, onSuccess }: MenuItemDialog
           </div>
 
           <div>
-            <Label htmlFor="description">Description</Label>
+            <Label htmlFor="description">Açıklama</Label>
             <Input
               id="description"
               value={formData.description}
@@ -243,9 +243,9 @@ export function MenuItemDialog({ open, onOpenChange, onSuccess }: MenuItemDialog
 
           <div className="space-y-4">
             <div className="flex justify-between items-center">
-              <h3 className="text-lg font-medium">Ingredients</h3>
+              <h3 className="text-lg font-medium">Reçete</h3>
               <Button onClick={addNewIngredient}>
-                <Plus className="mr-2 h-4 w-4" /> Add Ingredient
+                <Plus className="mr-2 h-4 w-4" /> Ürün Ekle
               </Button>
             </div>
 
@@ -253,11 +253,11 @@ export function MenuItemDialog({ open, onOpenChange, onSuccess }: MenuItemDialog
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead className="min-w-[300px]">Product</TableHead>
-                    <TableHead>Quantity</TableHead>
-                    <TableHead>Unit</TableHead>
-                    <TableHead className="text-right">Unit Price</TableHead>
-                    <TableHead className="text-right">Total</TableHead>
+                    <TableHead className="min-w-[300px]">Ürün</TableHead>
+                    <TableHead>Miktar</TableHead>
+                    <TableHead>Birim</TableHead>
+                    <TableHead className="text-right">Tutar</TableHead>
+                    <TableHead className="text-right">Toplam</TableHead>
                     <TableHead></TableHead>
                   </TableRow>
                 </TableHeader>
@@ -361,14 +361,14 @@ export function MenuItemDialog({ open, onOpenChange, onSuccess }: MenuItemDialog
             </div>
 
             <div className="flex flex-col items-end space-y-2">
-              <div className="text-sm">Total Cost: ₺{totalCost.toFixed(2)}</div>
+              <div className="text-sm">Total Maliyet: ₺{totalCost.toFixed(2)}</div>
               {formData.price && (
                 <>
                   <div className="text-sm">
-                    Selling Price: ₺{parseFloat(formData.price).toFixed(2)}
+                    Satış Fiyatı: ₺{parseFloat(formData.price).toFixed(2)}
                   </div>
                   <div className="text-sm">
-                    Profit Margin: %{profitMargin.toFixed(2)}
+                    Kar Oranı: %{profitMargin.toFixed(2)}
                   </div>
                 </>
               )}
@@ -378,10 +378,10 @@ export function MenuItemDialog({ open, onOpenChange, onSuccess }: MenuItemDialog
 
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)}>
-            Cancel
+            İptal
           </Button>
           <Button onClick={handleSubmit} disabled={loading}>
-            {loading ? "Saving..." : "Save"}
+            {loading ? "Saving..." : "Kaydet"}
           </Button>
         </DialogFooter>
       </DialogContent>
