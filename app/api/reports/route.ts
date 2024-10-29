@@ -1,28 +1,6 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
-import { startOfMonth, endOfMonth, subMonths, parseISO } from 'date-fns'
-
-interface MonthlyData {
-  month: string
-  gelir: number
-  gider: number
-  kar: number
-}
-
-interface InvoiceAggregate {
-  _sum: {
-    total: number | null
-    vatTotal: number | null
-    subtotal: number | null
-  }
-}
-
-interface CategoryData {
-  type: string
-  _sum: {
-    total: number | null
-  }
-}
+import { startOfMonth, endOfMonth, subMonths } from 'date-fns'
 
 interface CustomerIncome {
   customerName: string
@@ -34,12 +12,12 @@ interface IncomeDistributionItem {
   value: number
 }
 
-export async function GET(request: Request) {
+export const dynamic = 'force-dynamic'
+
+export async function GET() {
   try {
-    const { searchParams } = new URL(request.url)
-    const startDate = searchParams.get('startDate') ? parseISO(searchParams.get('startDate')!) : subMonths(new Date(), 6)
-    const endDate = searchParams.get('endDate') ? parseISO(searchParams.get('endDate')!) : new Date()
-    const period = searchParams.get('period') || 'monthly'
+    const startDate = subMonths(new Date(), 6)
+    const endDate = new Date()
 
     // Gelir kategorileri analizi
     const incomeByCategory = await prisma.invoice.groupBy({
@@ -72,7 +50,7 @@ export async function GET(request: Request) {
     })
 
     // Aylık gelir/gider analizi
-    const monthlyData: MonthlyData[] = []
+    const monthlyData = []
     let currentDate = startDate
     
     while (currentDate <= endDate) {
@@ -80,7 +58,7 @@ export async function GET(request: Request) {
       const end = endOfMonth(currentDate)
 
       // Gelirler
-      const income: InvoiceAggregate = await prisma.invoice.aggregate({
+      const income = await prisma.invoice.aggregate({
         where: {
           type: 'sale',
           date: {
@@ -96,7 +74,7 @@ export async function GET(request: Request) {
       })
 
       // Giderler
-      const expense: InvoiceAggregate = await prisma.invoice.aggregate({
+      const expense = await prisma.invoice.aggregate({
         where: {
           type: 'purchase',
           date: {
@@ -190,7 +168,7 @@ export async function GET(request: Request) {
       GROUP BY c.id, c.name
     `
 
-    const incomeByCustomer: IncomeDistributionItem[] = incomeByCustomerRaw.map((row: { customerName: any; total: any }) => ({
+    const incomeByCustomer: IncomeDistributionItem[] = incomeByCustomerRaw.map((row: CustomerIncome) => ({
       name: row.customerName,
       value: Number(row.total)
     }))
@@ -205,7 +183,7 @@ export async function GET(request: Request) {
         previousPeriodExpense: previousExpense._sum.total || 0
       },
       incomeByCategory: incomeByCustomer,
-      expenseByCategory: expenseByCategory.map((item: CategoryData) => ({
+      expenseByCategory: expenseByCategory.map((item: any) => ({
         name: item.type === 'purchase' ? 'Alışlar' : item.type,
         value: item._sum.total || 0
       }))

@@ -32,7 +32,7 @@ export function MainNav() {
           )}
         >
           <Receipt className="mr-2 h-4 w-4" />
-          Faturalar
+          Invoices
         </Button>
       </Link>
       <Link href="/customers">
@@ -44,7 +44,7 @@ export function MainNav() {
           )}
         >
           <Users className="mr-2 h-4 w-4" />
-          Müşteriler
+          Customers
         </Button>
       </Link>
       <Link href="/inventory">
@@ -56,7 +56,7 @@ export function MainNav() {
           )}
         >
           <Package2 className="mr-2 h-4 w-4" />
-          Stok
+          Inventory
         </Button>
       </Link>
       <Link href="/ledger">
@@ -68,7 +68,7 @@ export function MainNav() {
           )}
         >
           <FileSpreadsheet className="mr-2 h-4 w-4" />
-          Hesap Defteri
+          Ledger
         </Button>
       </Link>
       <Link href="/reports">
@@ -80,7 +80,7 @@ export function MainNav() {
           )}
         >
           <BarChart className="mr-2 h-4 w-4" />
-          Raporlar
+          Reports
         </Button>
       </Link>
       <Link href="/menu-costs">
@@ -92,7 +92,7 @@ export function MainNav() {
           )}
         >
           <Calculator className="mr-2 h-4 w-4" />
-          Maliyet Raporu
+          Cost Analysis
         </Button>
       </Link>
       <Link href="/settings">
@@ -104,7 +104,7 @@ export function MainNav() {
           )}
         >
           <Settings className="mr-2 h-4 w-4" />
-          Ayarlar
+          Settings
         </Button>
       </Link>
     </nav>

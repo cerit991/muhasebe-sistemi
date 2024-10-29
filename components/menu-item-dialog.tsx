@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import {
   Dialog,
@@ -73,7 +73,13 @@ export function MenuItemDialog({ open, onOpenChange, onSuccess }: MenuItemDialog
   const [ingredients, setIngredients] = useState<Ingredient[]>([])
   const [openCombobox, setOpenCombobox] = useState<number | null>(null)
 
-  // Ürünleri yükle
+  // Load products when dialog opens
+  useEffect(() => {
+    if (open) {
+      loadProducts()
+    }
+  }, [open])
+
   const loadProducts = async () => {
     try {
       const data = await fetchApi('products')
@@ -81,18 +87,11 @@ export function MenuItemDialog({ open, onOpenChange, onSuccess }: MenuItemDialog
     } catch (error) {
       toast({
         variant: "destructive",
-        title: "Hata",
-        description: "Ürünler yüklenirken bir hata oluştu"
+        title: "Error",
+        description: "Failed to load products"
       })
     }
   }
-
-  // Dialog açıldığında ürünleri yükle
-  useState(() => {
-    if (open) {
-      loadProducts()
-    }
-  })
 
   const addNewIngredient = () => {
     setIngredients(prev => [...prev, {
@@ -119,6 +118,7 @@ export function MenuItemDialog({ open, onOpenChange, onSuccess }: MenuItemDialog
         cost: product.price * newIngredients[index].quantity
       }
       setIngredients(newIngredients)
+      setOpenCombobox(null)
     }
   }
 
@@ -126,7 +126,7 @@ export function MenuItemDialog({ open, onOpenChange, onSuccess }: MenuItemDialog
     const newIngredients = [...ingredients]
     const currentIngredient = { ...newIngredients[index], ...updates }
     
-    // Maliyeti güncelle
+    // Update cost
     const product = products.find(p => p.id === currentIngredient.productId)
     if (product) {
       currentIngredient.cost = product.price * currentIngredient.quantity
@@ -149,13 +149,13 @@ export function MenuItemDialog({ open, onOpenChange, onSuccess }: MenuItemDialog
       if (!formData.name || !formData.price || ingredients.length === 0) {
         toast({
           variant: "destructive",
-          title: "Hata",
-          description: "Lütfen tüm zorunlu alanları doldurun ve en az bir malzeme ekleyin"
+          title: "Error",
+          description: "Please fill in all required fields and add at least one ingredient"
         })
         return
       }
 
-      const response = await fetchApi('menu-items', {
+      await fetchApi('menu-items', {
         method: 'POST',
         body: {
           ...formData,
@@ -168,8 +168,8 @@ export function MenuItemDialog({ open, onOpenChange, onSuccess }: MenuItemDialog
       })
 
       toast({
-        title: "Başarılı",
-        description: "Menü kalemi başarıyla kaydedildi"
+        title: "Success",
+        description: "Menu item saved successfully"
       })
 
       onOpenChange(false)
@@ -177,7 +177,7 @@ export function MenuItemDialog({ open, onOpenChange, onSuccess }: MenuItemDialog
         await onSuccess()
       }
 
-      // Formu sıfırla
+      // Reset form
       setFormData({
         name: "",
         description: "",
@@ -187,8 +187,8 @@ export function MenuItemDialog({ open, onOpenChange, onSuccess }: MenuItemDialog
     } catch (error) {
       toast({
         variant: "destructive",
-        title: "Hata",
-        description: "Menü kalemi kaydedilirken bir hata oluştu"
+        title: "Error",
+        description: "Failed to save menu item"
       })
     }
   }
@@ -199,18 +199,18 @@ export function MenuItemDialog({ open, onOpenChange, onSuccess }: MenuItemDialog
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-[1000px]">
+      <DialogContent className="max-w-[1000px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Yeni Menü Kalemi</DialogTitle>
+          <DialogTitle>New Menu Item</DialogTitle>
           <DialogDescription>
-            Menü kaleminin bilgilerini ve malzemelerini girin.
+            Enter menu item details and ingredients.
           </DialogDescription>
         </DialogHeader>
 
         <div className="grid gap-4">
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <Label htmlFor="name">Menü Adı</Label>
+              <Label htmlFor="name">Menu Name</Label>
               <Input
                 id="name"
                 value={formData.name}
@@ -219,7 +219,7 @@ export function MenuItemDialog({ open, onOpenChange, onSuccess }: MenuItemDialog
               />
             </div>
             <div>
-              <Label htmlFor="price">Satış Fiyatı</Label>
+              <Label htmlFor="price">Selling Price</Label>
               <Input
                 id="price"
                 type="number"
@@ -232,7 +232,7 @@ export function MenuItemDialog({ open, onOpenChange, onSuccess }: MenuItemDialog
           </div>
 
           <div>
-            <Label htmlFor="description">Açıklama</Label>
+            <Label htmlFor="description">Description</Label>
             <Input
               id="description"
               value={formData.description}
@@ -243,132 +243,132 @@ export function MenuItemDialog({ open, onOpenChange, onSuccess }: MenuItemDialog
 
           <div className="space-y-4">
             <div className="flex justify-between items-center">
-              <h3 className="text-lg font-medium">Malzemeler</h3>
+              <h3 className="text-lg font-medium">Ingredients</h3>
               <Button onClick={addNewIngredient}>
-                <Plus className="mr-2 h-4 w-4" /> Malzeme Ekle
+                <Plus className="mr-2 h-4 w-4" /> Add Ingredient
               </Button>
             </div>
 
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead className="w-[300px]">Ürün</TableHead>
-                  <TableHead>Miktar</TableHead>
-                  <TableHead>Birim</TableHead>
-                  <TableHead className="text-right">Birim Fiyat</TableHead>
-                  <TableHead className="text-right">Toplam</TableHead>
-                  <TableHead></TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {ingredients.map((ingredient, index) => (
-                  <TableRow key={ingredient.id}>
-                    <TableCell>
-                      <Popover 
-                        open={openCombobox === index} 
-                        onOpenChange={(open) => setOpenCombobox(open ? index : null)}
-                      >
-                        <PopoverTrigger asChild>
-                          <Button
-                            variant="outline"
-                            role="combobox"
-                            className={cn(
-                              "w-[300px] justify-between",
-                              !ingredient.productId && "text-muted-foreground"
-                            )}
-                          >
-                            {ingredient.productId ? (
-                              <span className="flex items-center">
-                                <span className="font-medium">{ingredient.productName}</span>
-                                <span className="ml-2 text-muted-foreground">
-                                  ({ingredient.productCode})
-                                </span>
-                              </span>
-                            ) : (
-                              "Ürün seçin veya arayın..."
-                            )}
-                            <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                          </Button>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-[300px] p-0">
-                          <Command>
-                            <CommandInput placeholder="Ürün ara..." className="h-9" />
-                            <CommandEmpty>Ürün bulunamadı.</CommandEmpty>
-                            <CommandGroup className="max-h-[200px] overflow-auto">
-                              {products.map((product) => (
-                                <CommandItem
-                                  key={product.id}
-                                  value={`${product.name} ${product.code}`}
-                                  onSelect={() => {
-                                    handleProductSelect(index, product.id)
-                                    setOpenCombobox(null)
-                                  }}
-                                  className="flex justify-between items-center"
-                                >
-                                  <div>
-                                    <span className="font-medium">{product.name}</span>
-                                    <span className="ml-2 text-muted-foreground">
-                                      ({product.code})
-                                    </span>
-                                  </div>
-                                  <span className="text-muted-foreground">
-                                    ₺{product.price.toLocaleString()}
-                                  </span>
-                                </CommandItem>
-                              ))}
-                            </CommandGroup>
-                          </Command>
-                        </PopoverContent>
-                      </Popover>
-                    </TableCell>
-                    <TableCell>
-                      <Input
-                        type="number"
-                        min="0.01"
-                        step="0.01"
-                        value={ingredient.quantity}
-                        onChange={(e) => updateIngredient(index, { 
-                          quantity: parseFloat(e.target.value) 
-                        })}
-                        className="w-24"
-                      />
-                    </TableCell>
-                    <TableCell>
-                      <Input
-                        value={ingredient.unit}
-                        readOnly
-                        className="w-20 bg-muted"
-                      />
-                    </TableCell>
-                    <TableCell className="text-right">
-                      ₺{(ingredient.cost / ingredient.quantity).toFixed(2)}
-                    </TableCell>
-                    <TableCell className="text-right">
-                      ₺{ingredient.cost.toFixed(2)}
-                    </TableCell>
-                    <TableCell>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => removeIngredient(index)}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </TableCell>
+            <div className="overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="min-w-[300px]">Product</TableHead>
+                    <TableHead>Quantity</TableHead>
+                    <TableHead>Unit</TableHead>
+                    <TableHead className="text-right">Unit Price</TableHead>
+                    <TableHead className="text-right">Total</TableHead>
+                    <TableHead></TableHead>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                </TableHeader>
+                <TableBody>
+                  {ingredients.map((ingredient, index) => (
+                    <TableRow key={ingredient.id}>
+                      <TableCell>
+                        <Popover 
+                          open={openCombobox === index} 
+                          onOpenChange={(open) => setOpenCombobox(open ? index : null)}
+                        >
+                          <PopoverTrigger asChild>
+                            <Button
+                              variant="outline"
+                              role="combobox"
+                              className={cn(
+                                "w-[300px] justify-between",
+                                !ingredient.productId && "text-muted-foreground"
+                              )}
+                            >
+                              {ingredient.productId ? (
+                                <span className="flex items-center">
+                                  <span className="font-medium">{ingredient.productName}</span>
+                                  <span className="ml-2 text-muted-foreground">
+                                    ({ingredient.productCode})
+                                  </span>
+                                </span>
+                              ) : (
+                                "Select product..."
+                              )}
+                              <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                            </Button>
+                          </PopoverTrigger>
+                          <PopoverContent className="w-[300px] p-0" align="start">
+                            <Command>
+                              <CommandInput placeholder="Search product..." />
+                              <CommandEmpty>No product found.</CommandEmpty>
+                              <CommandGroup className="max-h-[200px] overflow-auto">
+                                {products.map((product) => (
+                                  <CommandItem
+                                    key={product.id}
+                                    value={`${product.name} ${product.code}`}
+                                    onSelect={() => handleProductSelect(index, product.id)}
+                                  >
+                                    <div className="flex justify-between w-full">
+                                      <span>
+                                        <span className="font-medium">{product.name}</span>
+                                        <span className="ml-2 text-muted-foreground">
+                                          ({product.code})
+                                        </span>
+                                      </span>
+                                      <span className="text-muted-foreground">
+                                        ₺{product.price.toLocaleString()}
+                                      </span>
+                                    </div>
+                                  </CommandItem>
+                                ))}
+                              </CommandGroup>
+                            </Command>
+                          </PopoverContent>
+                        </Popover>
+                      </TableCell>
+                      <TableCell>
+                        <Input
+                          type="number"
+                          min="0.01"
+                          step="0.01"
+                          value={ingredient.quantity}
+                          onChange={(e) => updateIngredient(index, { 
+                            quantity: parseFloat(e.target.value) 
+                          })}
+                          className="w-24"
+                        />
+                      </TableCell>
+                      <TableCell>
+                        <Input
+                          value={ingredient.unit}
+                          readOnly
+                          className="w-20 bg-muted"
+                        />
+                      </TableCell>
+                      <TableCell className="text-right">
+                        ₺{(ingredient.cost / ingredient.quantity).toFixed(2)}
+                      </TableCell>
+                      <TableCell className="text-right">
+                        ₺{ingredient.cost.toFixed(2)}
+                      </TableCell>
+                      <TableCell>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => removeIngredient(index)}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
 
             <div className="flex flex-col items-end space-y-2">
-              <div className="text-sm">Toplam Maliyet: ₺{totalCost.toFixed(2)}</div>
+              <div className="text-sm">Total Cost: ₺{totalCost.toFixed(2)}</div>
               {formData.price && (
                 <>
                   <div className="text-sm">
-                    Satış Fiyatı: ₺{parseFloat(formData.price).toFixed(2)}
+                    Selling Price: ₺{parseFloat(formData.price).toFixed(2)}
                   </div>
                   <div className="text-sm">
-                    Kar Marjı: %{profitMargin.toFixed(2)}
+                    Profit Margin: %{profitMargin.toFixed(2)}
                   </div>
                 </>
               )}
@@ -378,10 +378,10 @@ export function MenuItemDialog({ open, onOpenChange, onSuccess }: MenuItemDialog
 
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)}>
-            İptal
+            Cancel
           </Button>
           <Button onClick={handleSubmit} disabled={loading}>
-            {loading ? "Kaydediliyor..." : "Kaydet"}
+            {loading ? "Saving..." : "Save"}
           </Button>
         </DialogFooter>
       </DialogContent>

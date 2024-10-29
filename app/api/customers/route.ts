@@ -1,23 +1,36 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 
+export async function GET() {
+  try {
+    const customers = await prisma.customer.findMany({
+      orderBy: { createdAt: 'desc' }
+    })
+    return NextResponse.json(customers)
+  } catch (error) {
+    console.error('Customers fetch error:', error)
+    return NextResponse.json(
+      { error: 'Failed to fetch customers' },
+      { status: 500 }
+    )
+  }
+}
+
 export async function POST(request: Request) {
   try {
-    const { name, taxNumber, phone, type } = await request.json()
+    const body = await request.json()
+    const { name, taxNumber, phone, type } = body
 
-    // Validation
     if (!name || !taxNumber || !phone || !type) {
       return NextResponse.json(
-        { error: 'Tüm alanlar zorunludur' },
+        { error: 'Required fields are missing' },
         { status: 400 }
       )
     }
 
-    // Generate a unique customer code
     const customerCount = await prisma.customer.count()
     const code = `CUS${(customerCount + 1).toString().padStart(4, '0')}`
 
-    // Insert customer
     const customer = await prisma.customer.create({
       data: {
         code,
@@ -31,24 +44,9 @@ export async function POST(request: Request) {
 
     return NextResponse.json(customer, { status: 201 })
   } catch (error) {
-    console.error('Müşteri kayıt hatası:', error)
+    console.error('Customer creation error:', error)
     return NextResponse.json(
-      { error: 'Müşteri kaydı yapılırken bir hata oluştu' },
-      { status: 500 }
-    )
-  }
-}
-
-export async function GET() {
-  try {
-    const customers = await prisma.customer.findMany({
-      orderBy: { createdAt: 'desc' }
-    })
-    return NextResponse.json(customers)
-  } catch (error) {
-    console.error('Müşteri listesi alınırken hata:', error)
-    return NextResponse.json(
-      { error: 'Müşteri listesi alınamadı' },
+      { error: 'Failed to create customer' },
       { status: 500 }
     )
   }

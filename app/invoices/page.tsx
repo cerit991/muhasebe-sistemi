@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import {
@@ -53,8 +53,8 @@ export default function InvoicesPage() {
       setInvoices(data)
     } catch (error) {
       toast({
-        title: "Hata",
-        description: "Faturalar yüklenirken bir hata oluştu",
+        title: "Error",
+        description: "Failed to load invoices",
         variant: "destructive",
       })
     }
@@ -64,8 +64,8 @@ export default function InvoicesPage() {
     await loadInvoices()
     setIsDialogOpen(false)
     toast({
-      title: "Başarılı",
-      description: "Yeni fatura başarıyla oluşturuldu",
+      title: "Success",
+      description: "Invoice created successfully",
     })
   }
 
@@ -77,26 +77,26 @@ export default function InvoicesPage() {
   return (
     <div className="container mx-auto py-10">
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold">Faturalar</h1>
+        <h1 className="text-3xl font-bold">Invoices</h1>
         <div className="flex space-x-2">
           <Select value={invoiceType} onValueChange={(value: "sale" | "purchase") => setInvoiceType(value)}>
             <SelectTrigger className="w-[180px]">
-              <SelectValue placeholder="Fatura tipi seçin" />
+              <SelectValue placeholder="Select invoice type" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="sale">Satış Faturası</SelectItem>
-              <SelectItem value="purchase">Alış Faturası</SelectItem>
+              <SelectItem value="sale">Sales Invoice</SelectItem>
+              <SelectItem value="purchase">Purchase Invoice</SelectItem>
             </SelectContent>
           </Select>
           <Button onClick={() => setIsDialogOpen(true)}>
-            Yeni Fatura Oluştur
+            Create New Invoice
           </Button>
         </div>
       </div>
 
       <div className="flex items-center py-4">
         <Input
-          placeholder="Fatura ara..."
+          placeholder="Search invoices..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
           className="max-w-sm"
@@ -107,22 +107,22 @@ export default function InvoicesPage() {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Fatura No</TableHead>
-              <TableHead>Tip</TableHead>
-              <TableHead>Müşteri/Tedarikçi</TableHead>
-              <TableHead>Tarih</TableHead>
-              <TableHead className="text-right">Tutar</TableHead>
-              <TableHead>Durum</TableHead>
+              <TableHead>Invoice No</TableHead>
+              <TableHead>Type</TableHead>
+              <TableHead>Customer/Supplier</TableHead>
+              <TableHead>Date</TableHead>
+              <TableHead className="text-right">Amount</TableHead>
+              <TableHead>Status</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {loading ? (
               <TableRow>
-                <TableCell colSpan={6} className="text-center">Yükleniyor...</TableCell>
+                <TableCell colSpan={6} className="text-center">Loading...</TableCell>
               </TableRow>
             ) : filteredInvoices.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={6} className="text-center">Kayıt bulunamadı</TableCell>
+                <TableCell colSpan={6} className="text-center">No records found</TableCell>
               </TableRow>
             ) : (
               filteredInvoices.map((invoice) => (
@@ -130,17 +130,17 @@ export default function InvoicesPage() {
                   <TableCell className="font-medium">{invoice.number}</TableCell>
                   <TableCell>
                     <Badge variant={invoice.type === "sale" ? "default" : "secondary"}>
-                      {invoice.type === "sale" ? "Satış" : "Alış"}
+                      {invoice.type === "sale" ? "Sale" : "Purchase"}
                     </Badge>
                   </TableCell>
                   <TableCell>{invoice.customer.name}</TableCell>
-                  <TableCell>{new Date(invoice.date).toLocaleDateString("tr-TR")}</TableCell>
+                  <TableCell>{new Date(invoice.date).toLocaleDateString()}</TableCell>
                   <TableCell className="text-right">
-                    ₺{invoice.total.toLocaleString("tr-TR", { minimumFractionDigits: 2 })}
+                    ${invoice.total.toLocaleString(undefined, { minimumFractionDigits: 2 })}
                   </TableCell>
                   <TableCell>
                     <Badge variant={invoice.status === "paid" ? "default" : "secondary"}>
-                      {invoice.status === "paid" ? "Ödendi" : "Beklemede"}
+                      {invoice.status === "paid" ? "Paid" : "Pending"}
                     </Badge>
                   </TableCell>
                 </TableRow>

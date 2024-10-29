@@ -8,33 +8,48 @@ export async function GET() {
     })
     return NextResponse.json(products)
   } catch (error) {
-    return NextResponse.json({ error: 'Ürünler yüklenirken hata oluştu' }, { status: 500 })
+    console.error('Products fetch error:', error)
+    return NextResponse.json(
+      { error: 'Failed to fetch products' },
+      { status: 500 }
+    )
   }
 }
 
 export async function POST(request: Request) {
   try {
-    const data = await request.json()
+    const body = await request.json()
+    const { name, unit, vatRate } = body
 
-    // Generate product code
+    if (!name || !unit || !vatRate) {
+      return NextResponse.json(
+        { error: 'Required fields are missing' },
+        { status: 400 }
+      )
+    }
+
     const productCount = await prisma.product.count()
     const code = `PRD${(productCount + 1).toString().padStart(4, '0')}`
 
     const product = await prisma.product.create({
       data: {
         code,
-        name: data.name,
-        unit: data.unit,
-        price: 0, // Başlangıçta 0, alış faturalarından güncellenecek
-        vatRate: parseFloat(data.vatRate),
-        quantity: 0, // Başlangıçta stok 0
-        minQuantity: 0, // Minimum stok miktarı 0
-        category: "Genel", // Varsayılan kategori
+        name,
+        unit,
+        price: 0,
+        vatRate: parseFloat(vatRate),
+        quantity: 0,
+        minQuantity: 0,
+        category: "Genel"
       }
     })
-    return NextResponse.json(product)
+
+    return NextResponse.json(product, { status: 201 })
   } catch (error) {
-    console.error('Ürün kayıt hatası:', error)
-    return NextResponse.json({ error: 'Ürün kaydedilirken hata oluştu' }, { status: 500 })
+    console.error('Product creation error:', error)
+    return NextResponse.json(
+      { error: 'Failed to create product' },
+      { status: 500 }
+    )
   }
 }

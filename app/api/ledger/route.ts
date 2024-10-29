@@ -8,25 +8,43 @@ export async function GET() {
     })
     return NextResponse.json(entries)
   } catch (error) {
-    return NextResponse.json({ error: 'Kayıtlar yüklenirken hata oluştu' }, { status: 500 })
+    console.error('Ledger entries fetch error:', error)
+    return NextResponse.json(
+      { error: 'Failed to fetch ledger entries' },
+      { status: 500 }
+    )
   }
 }
 
 export async function POST(request: Request) {
   try {
-    const data = await request.json()
+    const body = await request.json()
+    const { date, type, category, description, amount, paymentType } = body
+
+    if (!date || !type || !category || !description || !amount) {
+      return NextResponse.json(
+        { error: 'Required fields are missing' },
+        { status: 400 }
+      )
+    }
+
     const entry = await prisma.ledgerEntry.create({
       data: {
-        date: new Date(data.date),
-        type: data.type,
-        category: data.category,
-        description: data.description,
-        amount: parseFloat(data.amount),
-        paymentType: data.type === 'income' ? data.paymentType : null // Sadece gelir için ödeme türü
+        date: new Date(date),
+        type,
+        category,
+        description,
+        amount: parseFloat(amount),
+        paymentType: type === 'income' ? paymentType : null
       }
     })
-    return NextResponse.json(entry)
+
+    return NextResponse.json(entry, { status: 201 })
   } catch (error) {
-    return NextResponse.json({ error: 'Kayıt eklenirken hata oluştu' }, { status: 500 })
+    console.error('Ledger entry creation error:', error)
+    return NextResponse.json(
+      { error: 'Failed to create ledger entry' },
+      { status: 500 }
+    )
   }
 }

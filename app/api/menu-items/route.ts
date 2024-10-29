@@ -29,19 +29,25 @@ export async function GET() {
       include: {
         ingredients: {
           include: {
-            product: true
+            product: {
+              select: {
+                name: true,
+                price: true,
+                unit: true
+              }
+            }
           }
         }
       },
       orderBy: { createdAt: 'desc' }
     })
 
-    // Her menü kalemi için maliyet hesapla
+    // Calculate costs for each menu item
     const menuItemsWithCost = menuItems.map((item: MenuItemWithIngredients): MenuItem => {
       const totalCost = item.ingredients.reduce((sum: number, ing: MenuIngredient) => 
         sum + (ing.product.price * ing.quantity), 0)
       
-      const profitMargin = ((item.price - totalCost) / item.price) * 100
+      const profitMargin = item.price > 0 ? ((item.price - totalCost) / item.price) * 100 : 0
 
       return {
         id: item.id,
@@ -59,9 +65,9 @@ export async function GET() {
 
     return NextResponse.json(menuItemsWithCost)
   } catch (error) {
-    console.error('Menü kalemleri yüklenirken hata:', error)
+    console.error('Menu items fetch error:', error)
     return NextResponse.json(
-      { error: 'Menü kalemleri yüklenirken bir hata oluştu' },
+      { error: 'Failed to load menu items' },
       { status: 500 }
     )
   }
@@ -71,11 +77,11 @@ export async function POST(request: Request) {
   try {
     const data = await request.json()
 
-    // Menü kodu oluştur
+    // Generate menu code
     const menuItemCount = await prisma.menuItem.count()
     const code = `MENU${(menuItemCount + 1).toString().padStart(4, '0')}`
 
-    // Menü kalemini oluştur
+    // Create menu item with ingredients
     const menuItem = await prisma.menuItem.create({
       data: {
         code,
@@ -100,9 +106,9 @@ export async function POST(request: Request) {
 
     return NextResponse.json(menuItem)
   } catch (error) {
-    console.error('Menü kalemi kaydedilirken hata:', error)
+    console.error('Menu item creation error:', error)
     return NextResponse.json(
-      { error: 'Menü kalemi kaydedilirken bir hata oluştu' },
+      { error: 'Failed to create menu item' },
       { status: 500 }
     )
   }

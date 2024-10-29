@@ -44,17 +44,17 @@ export function CustomerDialog({ open, onOpenChange, onSuccess }: CustomerDialog
     try {
       // Validation
       if (!formData.name || !formData.taxNumber || !formData.phone) {
-        throw new Error("Lütfen tüm alanları doldurun")
+        throw new Error("Please fill in all required fields")
       }
 
       // Tax number validation
       if (!/^\d{10,11}$/.test(formData.taxNumber)) {
-        throw new Error("Vergi numarası 10 veya 11 haneli olmalıdır")
+        throw new Error("Tax number must be 10 or 11 digits")
       }
 
       // Phone validation
       if (!/^\d{10,11}$/.test(formData.phone.replace(/\D/g, ''))) {
-        throw new Error("Geçerli bir telefon numarası girin")
+        throw new Error("Please enter a valid phone number")
       }
 
       const response = await fetch('/api/customers', {
@@ -68,12 +68,12 @@ export function CustomerDialog({ open, onOpenChange, onSuccess }: CustomerDialog
       const data = await response.json()
 
       if (!response.ok) {
-        throw new Error(data.error || "Kayıt işlemi başarısız oldu")
+        throw new Error(data.error || "Failed to create customer")
       }
 
       toast({
-        title: "Başarılı",
-        description: "Cari kart başarıyla oluşturuldu",
+        title: "Success",
+        description: "Customer created successfully",
       })
 
       onOpenChange(false)
@@ -84,15 +84,14 @@ export function CustomerDialog({ open, onOpenChange, onSuccess }: CustomerDialog
         type: "customer",
       })
 
-      // Call onSuccess callback if provided
       if (onSuccess) {
         await onSuccess()
       }
     } catch (error) {
       toast({
         variant: "destructive",
-        title: "Hata",
-        description: error instanceof Error ? error.message : "Bir hata oluştu",
+        title: "Error",
+        description: error instanceof Error ? error.message : "An error occurred",
       })
     } finally {
       setLoading(false)
@@ -103,16 +102,16 @@ export function CustomerDialog({ open, onOpenChange, onSuccess }: CustomerDialog
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>Yeni Cari Kart</DialogTitle>
+          <DialogTitle>New Customer</DialogTitle>
           <DialogDescription>
-            Yeni bir cari kart oluşturmak için aşağıdaki bilgileri doldurun.
+            Fill in the details to create a new customer.
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit}>
           <div className="grid gap-4 py-4">
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="name" className="text-right">
-                Cari Adı
+                Name
               </Label>
               <Input
                 id="name"
@@ -124,7 +123,7 @@ export function CustomerDialog({ open, onOpenChange, onSuccess }: CustomerDialog
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="taxNumber" className="text-right">
-                Vergi No
+                Tax Number
               </Label>
               <Input
                 id="taxNumber"
@@ -136,7 +135,7 @@ export function CustomerDialog({ open, onOpenChange, onSuccess }: CustomerDialog
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="phone" className="text-right">
-                Telefon
+                Phone
               </Label>
               <Input
                 id="phone"
@@ -148,25 +147,25 @@ export function CustomerDialog({ open, onOpenChange, onSuccess }: CustomerDialog
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="type" className="text-right">
-                Tip
+                Type
               </Label>
               <Select
                 value={formData.type}
                 onValueChange={(value) => setFormData({ ...formData, type: value })}
               >
                 <SelectTrigger className="col-span-3">
-                  <SelectValue placeholder="Cari tipi seçin" />
+                  <SelectValue placeholder="Select type" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="customer">Müşteri</SelectItem>
-                  <SelectItem value="supplier">Tedarikçi</SelectItem>
+                  <SelectItem value="customer">Customer</SelectItem>
+                  <SelectItem value="supplier">Supplier</SelectItem>
                 </SelectContent>
               </Select>
             </div>
           </div>
           <DialogFooter>
             <Button type="submit" disabled={loading}>
-              {loading ? "Kaydediliyor..." : "Kaydet"}
+              {loading ? "Saving..." : "Save"}
             </Button>
           </DialogFooter>
         </form>

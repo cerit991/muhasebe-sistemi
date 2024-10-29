@@ -3,12 +3,12 @@ import { prisma } from '@/lib/prisma'
 
 export async function GET() {
   try {
-    // Her zaman ilk ayarı al
     const settings = await prisma.settings.findFirst()
     return NextResponse.json(settings)
   } catch (error) {
+    console.error('Settings fetch error:', error)
     return NextResponse.json(
-      { error: 'Ayarlar yüklenirken bir hata oluştu' },
+      { error: 'Failed to fetch settings' },
       { status: 500 }
     )
   }
@@ -16,29 +16,26 @@ export async function GET() {
 
 export async function POST(request: Request) {
   try {
-    const data = await request.json()
-
-    // Mevcut ayarları kontrol et
+    const body = await request.json()
     const existingSettings = await prisma.settings.findFirst()
 
+    let settings
     if (existingSettings) {
-      // Varsa güncelle
-      const settings = await prisma.settings.update({
+      settings = await prisma.settings.update({
         where: { id: existingSettings.id },
-        data
+        data: body
       })
-      return NextResponse.json(settings)
     } else {
-      // Yoksa yeni oluştur
-      const settings = await prisma.settings.create({
-        data
+      settings = await prisma.settings.create({
+        data: body
       })
-      return NextResponse.json(settings)
     }
+
+    return NextResponse.json(settings, { status: 200 })
   } catch (error) {
-    console.error('Ayarlar kaydedilirken hata:', error)
+    console.error('Settings update error:', error)
     return NextResponse.json(
-      { error: 'Ayarlar kaydedilirken bir hata oluştu' },
+      { error: 'Failed to update settings' },
       { status: 500 }
     )
   }

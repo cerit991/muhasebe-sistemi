@@ -7,7 +7,6 @@ datasource db {
   url      = "file:./dev.db"
 }
 
-// Müşteri/Tedarikçi
 model Customer {
   id        String    @id @default(cuid())
   code      String    @unique
@@ -21,7 +20,6 @@ model Customer {
   updatedAt DateTime  @updatedAt
 }
 
-// Ürün/Stok
 model Product {
   id          String           @id @default(cuid())
   code        String           @unique
@@ -38,7 +36,6 @@ model Product {
   updatedAt   DateTime         @updatedAt
 }
 
-// Fatura
 model Invoice {
   id          String        @id @default(cuid())
   number      String        @unique
@@ -57,7 +54,6 @@ model Invoice {
   @@index([customerId])
 }
 
-// Fatura Kalemleri
 model InvoiceItem {
   id        String   @id @default(cuid())
   invoiceId String
@@ -76,7 +72,6 @@ model InvoiceItem {
   @@index([productId])
 }
 
-// Hesap Defteri
 model LedgerEntry {
   id          String   @id @default(cuid())
   date        DateTime
@@ -89,11 +84,9 @@ model LedgerEntry {
   updatedAt   DateTime @updatedAt
 }
 
-// Sistem Ayarları
 model Settings {
   id            String   @id @default(cuid())
   companyName   String
-  email         String?
   phone         String?
   address       String?
   taxNumber     String?
@@ -103,7 +96,6 @@ model Settings {
   updatedAt     DateTime @updatedAt
 }
 
-// Menü Kalemi
 model MenuItem {
   id          String           @id @default(cuid())
   code        String           @unique
@@ -115,7 +107,6 @@ model MenuItem {
   updatedAt   DateTime         @updatedAt
 }
 
-// Menü Malzemeleri
 model MenuIngredient {
   id          String    @id @default(cuid())
   menuItemId  String

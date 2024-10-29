@@ -24,13 +24,13 @@ export function useApi() {
 
       if (!response.ok) {
         const error = await response.json()
-        throw new Error(error.message || 'Bir hata oluştu')
+        throw new Error(error.message || 'An error occurred')
       }
 
       const data = await response.json()
       return data
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Bir hata oluştu')
+      setError(err instanceof Error ? err.message : 'An error occurred')
       throw err
     } finally {
       setLoading(false)

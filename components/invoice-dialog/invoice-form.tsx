@@ -19,7 +19,7 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { cn } from "@/lib/utils"
-import type { Customer, InvoiceFormData } from "@/types/invoice"
+import type { Customer, InvoiceFormData } from "./types"
 
 interface InvoiceFormProps {
   formData: InvoiceFormData
@@ -37,69 +37,100 @@ export function InvoiceForm({
   onInvoiceNumberChange,
 }: InvoiceFormProps) {
   return (
-    <div className="space-y-4">
-      <div className="grid grid-cols-3 items-center gap-4">
-        <Label className="text-right">Fatura No</Label>
-        <Input
-          required
-          value={formData.invoiceNumber}
-          onChange={(e) => onInvoiceNumberChange(e.target.value)}
-          className="col-span-2"
-        />
-      </div>
+    <div className="space-y-6 p-2">
+      <div className="grid grid-cols-2 gap-6">
+        {/* Left Column */}
+        <div className="space-y-4">
+          <div>
+            <Label htmlFor="invoiceNumber" className="text-sm font-medium mb-1.5 block">
+              Invoice Number
+            </Label>
+            <Input
+              id="invoiceNumber"
+              required
+              value={formData.invoiceNumber}
+              onChange={(e) => onInvoiceNumberChange(e.target.value)}
+              className="w-full"
+              placeholder="Enter invoice number"
+            />
+          </div>
 
-      <div className="grid grid-cols-3 items-center gap-4">
-        <Label className="text-right">Fatura Tarihi</Label>
-        <div className="col-span-2">
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button
-                variant={"outline"}
-                className={cn(
-                  "w-full justify-start text-left font-normal",
-                  !formData.invoiceDate && "text-muted-foreground"
-                )}
-              >
-                <CalendarIcon className="mr-2 h-4 w-4" />
-                {formData.invoiceDate ? format(formData.invoiceDate, "PPP") : <span>Tarih seçin</span>}
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-auto p-0">
-              <Calendar
-                mode="single"
-                selected={formData.invoiceDate}
-                onSelect={onDateSelect}
-                initialFocus
-              />
-            </PopoverContent>
-          </Popover>
+          <div>
+            <Label htmlFor="invoiceDate" className="text-sm font-medium mb-1.5 block">
+              Invoice Date
+            </Label>
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button
+                  id="invoiceDate"
+                  variant="outline"
+                  className={cn(
+                    "w-full justify-start text-left font-normal",
+                    !formData.invoiceDate && "text-muted-foreground"
+                  )}
+                >
+                  <CalendarIcon className="mr-2 h-4 w-4" />
+                  {formData.invoiceDate ? format(formData.invoiceDate, "PPP") : <span>Select date</span>}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0" align="start">
+                <Calendar
+                  mode="single"
+                  selected={formData.invoiceDate}
+                  onSelect={onDateSelect}
+                  initialFocus
+                />
+              </PopoverContent>
+            </Popover>
+          </div>
+        </div>
+
+        {/* Right Column */}
+        <div className="space-y-4">
+          <div>
+            <Label htmlFor="customer" className="text-sm font-medium mb-1.5 block">
+              Customer/Supplier
+            </Label>
+            <Select onValueChange={onCustomerSelect} value={formData.customerId}>
+              <SelectTrigger id="customer" className="w-full">
+                <SelectValue placeholder="Select customer/supplier" />
+              </SelectTrigger>
+              <SelectContent>
+                {customers.map((customer) => (
+                  <SelectItem key={customer.id} value={customer.id}>
+                    <div className="flex justify-between items-center w-full">
+                      <span>{customer.name}</span>
+                      <span className="text-muted-foreground">({customer.code})</span>
+                    </div>
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div>
+            <Label htmlFor="taxNumber" className="text-sm font-medium mb-1.5 block">
+              Tax Number
+            </Label>
+            <Input
+              id="taxNumber"
+              value={formData.customerTaxNumber}
+              readOnly
+              className="w-full bg-muted"
+              placeholder="Tax number will appear here"
+            />
+          </div>
         </div>
       </div>
 
-      <div className="grid grid-cols-3 items-center gap-4">
-        <Label className="text-right">Cari Seçimi</Label>
-        <Select onValueChange={onCustomerSelect} value={formData.customerId}>
-          <SelectTrigger className="col-span-2">
-            <SelectValue placeholder="Cari seçin" />
-          </SelectTrigger>
-          <SelectContent>
-            {customers.map((customer) => (
-              <SelectItem key={customer.id} value={customer.id}>
-                {customer.name} ({customer.code})
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
-
-      <div className="grid grid-cols-3 items-center gap-4">
-        <Label className="text-right">Vergi No</Label>
-        <Input
-          value={formData.customerTaxNumber}
-          readOnly
-          className="col-span-2 bg-muted"
-        />
-      </div>
+      {formData.customerName && (
+        <div className="bg-muted/50 p-4 rounded-lg">
+          <div className="text-sm">
+            <span className="font-medium">Selected Customer: </span>
+            {formData.customerName}
+          </div>
+        </div>
+      )}
     </div>
   )
 }

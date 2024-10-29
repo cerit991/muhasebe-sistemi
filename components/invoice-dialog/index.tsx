@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import {
   Dialog,
@@ -8,18 +8,17 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
-import { InvoiceForm } from "./invoice-form"
-import { InvoiceItems } from "./invoice-items"
 import { useApi } from "@/lib/hooks/use-api"
 import { useToast } from "@/components/ui/use-toast"
-import type { Customer, Product, InvoiceItem, InvoiceFormData } from "@/types/invoice"
-
-interface InvoiceDialogProps {
-  open: boolean
-  onOpenChange: (open: boolean) => void
-  type: "sale" | "purchase"
-  onSuccess?: () => void | Promise<void>
-}
+import { InvoiceForm } from "./invoice-form"
+import { InvoiceItems } from "./invoice-items"
+import type { 
+  Customer, 
+  Product, 
+  InvoiceItem, 
+  InvoiceFormData,
+  InvoiceDialogProps 
+} from "./types"
 
 export function InvoiceDialog({ open, onOpenChange, type, onSuccess }: InvoiceDialogProps) {
   const { fetchApi, loading } = useApi()
@@ -35,8 +34,14 @@ export function InvoiceDialog({ open, onOpenChange, type, onSuccess }: InvoiceDi
   const [items, setItems] = useState<InvoiceItem[]>([])
   const [customers, setCustomers] = useState<Customer[]>([])
   const [products, setProducts] = useState<Product[]>([])
+  const [openCombobox, setOpenCombobox] = useState<number | null>(null)
 
-  // Müşterileri ve ürünleri yükle
+  useEffect(() => {
+    if (open) {
+      loadData()
+    }
+  }, [open])
+
   const loadData = async () => {
     try {
       const [customersData, productsData] = await Promise.all([
@@ -48,8 +53,8 @@ export function InvoiceDialog({ open, onOpenChange, type, onSuccess }: InvoiceDi
     } catch (error) {
       toast({
         variant: "destructive",
-        title: "Hata",
-        description: "Veriler yüklenirken bir hata oluştu"
+        title: "Error",
+        description: "Failed to load data"
       })
     }
   }
@@ -149,9 +154,11 @@ export function InvoiceDialog({ open, onOpenChange, type, onSuccess }: InvoiceDi
       return sum + (afterDiscount * (item.vatRate / 100))
     }, 0)
 
-    const total = subtotal + vatTotal
-
-    return { subtotal, vatTotal, total }
+    return {
+      subtotal,
+      vatTotal,
+      total: subtotal + vatTotal
+    }
   }
 
   const handleSubmit = async () => {
@@ -159,8 +166,8 @@ export function InvoiceDialog({ open, onOpenChange, type, onSuccess }: InvoiceDi
       if (!formData.invoiceNumber || !formData.customerId) {
         toast({
           variant: "destructive",
-          title: "Hata",
-          description: "Lütfen zorunlu alanları doldurun!"
+          title: "Error",
+          description: "Please fill in all required fields!"
         })
         return
       }
@@ -168,14 +175,14 @@ export function InvoiceDialog({ open, onOpenChange, type, onSuccess }: InvoiceDi
       if (items.length === 0) {
         toast({
           variant: "destructive",
-          title: "Hata",
-          description: "En az bir ürün eklemelisiniz!"
+          title: "Error",
+          description: "Please add at least one item!"
         })
         return
       }
 
       const totals = calculateTotals()
-      const response = await fetchApi('invoices', {
+      await fetchApi('invoices', {
         method: 'POST',
         body: {
           ...formData,
@@ -186,8 +193,8 @@ export function InvoiceDialog({ open, onOpenChange, type, onSuccess }: InvoiceDi
       })
 
       toast({
-        title: "Başarılı",
-        description: "Fatura başarıyla kaydedildi"
+        title: "Success",
+        description: "Invoice created successfully"
       })
 
       onOpenChange(false)
@@ -195,7 +202,6 @@ export function InvoiceDialog({ open, onOpenChange, type, onSuccess }: InvoiceDi
         await onSuccess()
       }
 
-      // Form verilerini sıfırla
       setFormData({
         invoiceNumber: "",
         invoiceDate: new Date(),
@@ -207,27 +213,20 @@ export function InvoiceDialog({ open, onOpenChange, type, onSuccess }: InvoiceDi
     } catch (error) {
       toast({
         variant: "destructive",
-        title: "Hata",
-        description: "Fatura kaydedilirken bir hata oluştu"
+        title: "Error",
+        description: "Failed to create invoice"
       })
     }
   }
-
-  // Dialog açıldığında verileri yükle
-  useState(() => {
-    if (open) {
-      loadData()
-    }
-  })
 
   const totals = calculateTotals()
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-[1000px]">
+      <DialogContent className="max-w-[1000px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>
-            {type === "purchase" ? "Alış Faturası" : "Satış Faturası"}
+            {type === "purchase" ? "Purchase Invoice" : "Sales Invoice"}
           </DialogTitle>
         </DialogHeader>
 
@@ -248,15 +247,17 @@ export function InvoiceDialog({ open, onOpenChange, type, onSuccess }: InvoiceDi
             onProductSelect={handleProductSelect}
             onUpdateItem={updateItemCalculations}
             totals={totals}
+            openCombobox={openCombobox}
+            setOpenCombobox={setOpenCombobox}
           />
         </div>
 
-        <div className="flex justify-end space-x-2">
+        <div className="flex justify-end space-x-2 mt-4">
           <Button variant="outline" onClick={() => onOpenChange(false)}>
-            İptal
+            Cancel
           </Button>
           <Button onClick={handleSubmit} disabled={loading}>
-            {loading ? "Kaydediliyor..." : "Kaydet"}
+            {loading ? "Saving..." : "Save"}
           </Button>
         </div>
       </DialogContent>
