@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
-import { PrismaClient } from '@prisma/client'
+import type { Prisma } from '@prisma/client'
 
 export async function GET() {
   try {
@@ -38,7 +38,7 @@ export async function POST(request: Request) {
     }
 
     // Start a transaction to ensure data consistency
-    const result = await prisma.$transaction(async (tx: PrismaClient) => {
+    const result = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
       // Create the ledger entry
       const entry = await tx.ledgerEntry.create({
         data: {

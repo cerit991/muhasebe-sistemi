@@ -23,7 +23,7 @@ interface Transaction {
 
 export function generateCustomerStatement(customer: Customer, transactions: Transaction[]) {
   const doc = new jsPDF()
-  const pageWidth = doc.internal.pageSize.width
+  const pageWidth = doc.internal.pageSize.getWidth()
   const today = format(new Date(), 'dd MMMM yyyy', { locale: tr })
 
   // Header
@@ -78,14 +78,14 @@ export function generateCustomerStatement(customer: Customer, transactions: Tran
   })
 
   // Footer
-  const pageCount = doc.internal.getNumberOfPages()
+  const pageCount = (doc as any).internal.getNumberOfPages()
   doc.setFontSize(8)
   for (let i = 1; i <= pageCount; i++) {
     doc.setPage(i)
     doc.text(
       `Sayfa ${i} / ${pageCount}`,
       pageWidth / 2,
-      doc.internal.pageSize.height - 10,
+      doc.internal.pageSize.getHeight() - 10,
       { align: 'center' }
     )
   }
