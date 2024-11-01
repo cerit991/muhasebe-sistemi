@@ -47,12 +47,19 @@ export default function CustomerStatementPage() {
     }
   }
 
-  const handleDownloadPDF = () => {
+  const handleDownloadPDF = async () => {
     if (!statement) return
 
     try {
-      const doc = generateCustomerStatement(statement.customer, statement.transactions)
-      doc.save(`ekstre_${statement.customer.code}_${new Date().toISOString().split('T')[0]}.pdf`)
+      const pdfBlob = await generateCustomerStatement(statement.customer, statement.transactions)
+      const url = URL.createObjectURL(pdfBlob)
+      const link = document.createElement('a')
+      link.href = url
+      link.download = `ekstre_${statement.customer.code}.pdf`
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+      URL.revokeObjectURL(url)
     } catch (error) {
       toast({
         variant: "destructive",
@@ -62,13 +69,19 @@ export default function CustomerStatementPage() {
     }
   }
 
-  const handlePrintPDF = () => {
+  const handlePrintPDF = async () => {
     if (!statement) return
 
     try {
-      const doc = generateCustomerStatement(statement.customer, statement.transactions)
-      doc.autoPrint()
-      window.open(doc.output('bloburl'), '_blank')
+      const pdfBlob = await generateCustomerStatement(statement.customer, statement.transactions)
+      const url = URL.createObjectURL(pdfBlob)
+      const printWindow = window.open(url)
+      if (printWindow) {
+        printWindow.onload = () => {
+          printWindow.print()
+          URL.revokeObjectURL(url)
+        }
+      }
     } catch (error) {
       toast({
         variant: "destructive",
@@ -126,6 +139,7 @@ export default function CustomerStatementPage() {
           </div>
           <div>
             <h3 className="text-sm font-medium mb-1">Bakiye Durumu</h3>
+            <p className="text-sm">Borç Toplamı: ₺{totalDebit.toLocaleString('tr-TR', { minimumFractionDigits: 2 })}</p>
             <p className="text-sm">Alacak Toplamı: ₺{totalCredit.toLocaleString('tr-TR', { minimumFractionDigits: 2 })}</p>
             <p className="text-lg font-bold mt-2">
               Bakiye: ₺{Math.abs(statement.customer.balance).toLocaleString('tr-TR', { minimumFractionDigits: 2 })}

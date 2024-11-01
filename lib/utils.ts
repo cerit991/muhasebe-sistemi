@@ -7,24 +7,27 @@ export function cn(...inputs: ClassValue[]) {
 
 export function formatCurrency(amount: number): string {
   return new Intl.NumberFormat('tr-TR', {
+    style: 'decimal',
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
-    useGrouping: true,
+    useGrouping: true
   })
   .format(amount)
-  .replace(/\s/g, '') + ' ₺' // Remove any spaces and add ₺ at the end
+  .replace('.', ',') // Nokta yerine virgül kullan
+  .replace(/\s/g, '') + ' ₺'
 }
 
-// Format number as Turkish style with exactly 2 decimal places
 export function formatNumber(amount: number): string {
   return new Intl.NumberFormat('tr-TR', {
+    style: 'decimal',
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
-    useGrouping: true,
-  }).format(amount)
+    useGrouping: true
+  })
+  .format(amount)
+  .replace('.', ',') // Nokta yerine virgül kullan
 }
 
-// Format balance with A/B indicator
 export function formatBalance(amount: number): string {
   const formattedAmount = formatNumber(Math.abs(amount))
   return `${formattedAmount} ₺ ${amount >= 0 ? '(A)' : '(B)'}`
