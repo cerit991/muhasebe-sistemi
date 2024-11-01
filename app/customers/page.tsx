@@ -16,6 +16,7 @@ import { Badge } from "@/components/ui/badge"
 import { useApi } from "@/lib/hooks/use-api"
 import { useToast } from "@/components/ui/use-toast"
 import { useRouter } from "next/navigation"
+import { formatCurrency } from "@/lib/utils"
 
 interface Customer {
   id: string
@@ -118,10 +119,10 @@ export default function CustomersPage() {
                   </TableCell>
                   <TableCell>{customer.taxNumber}</TableCell>
                   <TableCell>{customer.phone}</TableCell>
-                  <TableCell className={`text-right font-medium ${
+                  <TableCell className={`text-right font-medium whitespace-nowrap ${
                     customer.balance >= 0 ? 'text-green-600' : 'text-red-600'
                   }`}>
-                    ₺{customer.balance.toLocaleString('tr-TR', { minimumFractionDigits: 2 })}
+                    {formatCurrency(customer.balance)}
                   </TableCell>
                   <TableCell>
                     <Button

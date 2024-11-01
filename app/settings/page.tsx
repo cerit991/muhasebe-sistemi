@@ -63,14 +63,14 @@ export default function SettingsPage() {
 
   return (
     <div className="container mx-auto py-10">
-      <h1 className="text-3xl font-bold mb-8">Settings</h1>
+      <h1 className="text-3xl font-bold mb-8">Ayarlar</h1>
 
       <div className="grid gap-6">
         <Card className="p-6">
-          <h2 className="text-xl font-semibold mb-4">Company Information</h2>
+          <h2 className="text-xl font-semibold mb-4">Şirket Bilgileri</h2>
           <div className="grid gap-4">
             <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="companyName" className="text-right">Company Name</Label>
+              <Label htmlFor="companyName" className="text-right">Şirket Adı</Label>
               <Input
                 id="companyName"
                 value={settings.companyName}
@@ -79,7 +79,7 @@ export default function SettingsPage() {
               />
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="phone" className="text-right">Phone</Label>
+              <Label htmlFor="phone" className="text-right">Telefon</Label>
               <Input
                 id="phone"
                 value={settings.phone}
@@ -88,7 +88,7 @@ export default function SettingsPage() {
               />
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="address" className="text-right">Address</Label>
+              <Label htmlFor="address" className="text-right">Adres</Label>
               <Input
                 id="address"
                 value={settings.address}
@@ -97,7 +97,7 @@ export default function SettingsPage() {
               />
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="taxNumber" className="text-right">Tax Number</Label>
+              <Label htmlFor="taxNumber" className="text-right">Vergi Nuamrası</Label>
               <Input
                 id="taxNumber"
                 value={settings.taxNumber}
@@ -109,13 +109,13 @@ export default function SettingsPage() {
         </Card>
 
         <Card className="p-6">
-          <h2 className="text-xl font-semibold mb-4">System Settings</h2>
+          <h2 className="text-xl font-semibold mb-4">Sistem Ayarları</h2>
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <div className="space-y-0.5">
                 <Label>Dark Mode</Label>
                 <div className="text-sm text-muted-foreground">
-                  Set dark theme preference
+                  Karanlık Tema
                 </div>
               </div>
               <Switch
@@ -125,9 +125,9 @@ export default function SettingsPage() {
             </div>
             <div className="flex items-center justify-between">
               <div className="space-y-0.5">
-                <Label>Notifications</Label>
+                <Label>Bildirimler</Label>
                 <div className="text-sm text-muted-foreground">
-                  Manage system notifications
+                  Bildirimleri yönet
                 </div>
               </div>
               <Switch
@@ -140,10 +140,10 @@ export default function SettingsPage() {
 
         <div className="flex justify-end space-x-4">
           <Button variant="outline" onClick={loadSettings} disabled={loading}>
-            Cancel
+            İptal
           </Button>
           <Button onClick={handleSubmit} disabled={loading}>
-            {loading ? "Saving..." : "Save"}
+            {loading ? "Kayıt edildi..." : "Kaydet"}
           </Button>
         </div>
       </div>

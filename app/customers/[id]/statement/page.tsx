@@ -12,32 +12,16 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
-import { Badge } from "@/components/ui/badge"
 import { CalendarDateRangePicker } from "@/components/date-range-picker"
 import { useApi } from "@/lib/hooks/use-api"
 import { useToast } from "@/components/ui/use-toast"
 import { Download, Printer } from "lucide-react"
 import { generateCustomerStatement } from "@/lib/pdf"
+import type { Customer, Transaction } from "@/types/statement"
 
 interface Statement {
-  customer: {
-    code: string
-    name: string
-    type: string
-    taxNumber: string
-    phone: string
-    balance: number
-  }
-  transactions: Array<{
-    id: string
-    date: string
-    description: string
-    type: string
-    amount: number
-    paymentType: string
-    reference?: string
-    balance: number
-  }>
+  customer: Customer
+  transactions: Transaction[]
 }
 
 export default function CustomerStatementPage() {
@@ -104,6 +88,15 @@ export default function CustomerStatementPage() {
     )
   }
 
+  // Calculate totals
+  const totalDebit = statement.transactions
+    .filter(t => t.type === 'debit')
+    .reduce((sum, t) => sum + t.amount, 0)
+
+  const totalCredit = statement.transactions
+    .filter(t => t.type === 'credit')
+    .reduce((sum, t) => sum + t.amount, 0)
+
   return (
     <div className="container mx-auto py-10">
       <div className="flex justify-between items-center mb-6">
@@ -123,22 +116,21 @@ export default function CustomerStatementPage() {
         <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
           <div>
             <h3 className="text-sm font-medium mb-1">Cari Bilgileri</h3>
-            <p className="text-sm">{statement.customer.name}</p>
-            <p className="text-sm text-muted-foreground">({statement.customer.code})</p>
+            <p className="text-sm">Hesap Kodu: {statement.customer.code}</p>
+            <p className="text-sm">Hesap Adı: {statement.customer.name}</p>
           </div>
           <div>
             <h3 className="text-sm font-medium mb-1">İletişim</h3>
-            <p className="text-sm">{statement.customer.phone}</p>
-            <p className="text-sm text-muted-foreground">VKN: {statement.customer.taxNumber}</p>
+            <p className="text-sm">Telefon: {statement.customer.phone}</p>
+            <p className="text-sm">VKN: {statement.customer.taxNumber}</p>
           </div>
           <div>
             <h3 className="text-sm font-medium mb-1">Bakiye Durumu</h3>
-            <p className={`text-lg font-bold ${statement.customer.balance >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-              ₺{statement.customer.balance.toLocaleString('tr-TR', { minimumFractionDigits: 2 })}
+            <p className="text-sm">Alacak Toplamı: ₺{totalCredit.toLocaleString('tr-TR', { minimumFractionDigits: 2 })}</p>
+            <p className="text-lg font-bold mt-2">
+              Bakiye: ₺{Math.abs(statement.customer.balance).toLocaleString('tr-TR', { minimumFractionDigits: 2 })}
+              {statement.customer.balance >= 0 ? ' (A)' : ' (B)'}
             </p>
-            <Badge variant={statement.customer.type === 'customer' ? 'default' : 'secondary'}>
-              {statement.customer.type === 'customer' ? 'Müşteri' : 'Tedarikçi'}
-            </Badge>
           </div>
         </div>
       </Card>
@@ -149,10 +141,12 @@ export default function CustomerStatementPage() {
             <TableHeader>
               <TableRow>
                 <TableHead>Tarih</TableHead>
+                <TableHead>Fiş No</TableHead>
+                <TableHead>Türü</TableHead>
+                <TableHead>Belge No</TableHead>
                 <TableHead>Açıklama</TableHead>
-                <TableHead>İşlem Türü</TableHead>
-                <TableHead>Ödeme Şekli</TableHead>
-                <TableHead className="text-right">Tutar</TableHead>
+                <TableHead className="text-right">Borç</TableHead>
+                <TableHead className="text-right">Alacak</TableHead>
                 <TableHead className="text-right">Bakiye</TableHead>
               </TableRow>
             </TableHeader>
@@ -160,31 +154,40 @@ export default function CustomerStatementPage() {
               {statement.transactions.map((transaction) => (
                 <TableRow key={transaction.id}>
                   <TableCell>{new Date(transaction.date).toLocaleDateString('tr-TR')}</TableCell>
-                  <TableCell>{transaction.description}</TableCell>
+                  <TableCell>{transaction.documentNo || '-'}</TableCell>
                   <TableCell>
-                    <Badge variant={transaction.type === 'income' ? 'default' : 'destructive'}>
-                      {transaction.type === 'income' ? 'Tahsilat' : 'Ödeme'}
-                    </Badge>
+                    {transaction.type === 'debit' ? 'Borç' : 'Alacak'}
                   </TableCell>
-                  <TableCell>
-                    {transaction.paymentType === 'cash' && 'Nakit'}
-                    {transaction.paymentType === 'credit_card' && 'Kredi Kartı'}
-                    {transaction.paymentType === 'bank_transfer' && 'Banka Transferi'}
-                    {transaction.paymentType === 'check' && 'Çek'}
-                    {transaction.paymentType === 'promissory_note' && 'Senet'}
+                  <TableCell>{transaction.documentNo || '-'}</TableCell>
+                  <TableCell>{transaction.description}</TableCell>
+                  <TableCell className="text-right">
+                    {transaction.type === 'debit' 
+                      ? `₺${transaction.amount.toLocaleString('tr-TR', { minimumFractionDigits: 2 })}` 
+                      : '-'}
                   </TableCell>
                   <TableCell className="text-right">
-                    ₺{transaction.amount.toLocaleString('tr-TR', { minimumFractionDigits: 2 })}
+                    {transaction.type === 'credit'
+                      ? `₺${transaction.amount.toLocaleString('tr-TR', { minimumFractionDigits: 2 })}`
+                      : '-'}
                   </TableCell>
-                  <TableCell className={`text-right font-medium ${
-                    transaction.balance >= 0 ? 'text-green-600' : 'text-red-600'
-                  }`}>
-                    ₺{transaction.balance.toLocaleString('tr-TR', { minimumFractionDigits: 2 })}
+                  <TableCell className="text-right font-medium">
+                    ₺{Math.abs(transaction.balance).toLocaleString('tr-TR', { minimumFractionDigits: 2 })}
+                    {transaction.balance >= 0 ? ' (A)' : ' (B)'}
                   </TableCell>
                 </TableRow>
               ))}
             </TableBody>
           </Table>
+        </div>
+
+        <div className="mt-4 flex justify-between items-center">
+          <div className="text-sm">
+            Listelenen: {statement.transactions.length}
+          </div>
+          <div className="space-y-1 text-sm text-right">
+            <p>Sayfa Toplamı: ₺{totalDebit.toLocaleString('tr-TR', { minimumFractionDigits: 2 })} / ₺{totalCredit.toLocaleString('tr-TR', { minimumFractionDigits: 2 })}</p>
+            <p>Rapor Toplamı: ₺{totalDebit.toLocaleString('tr-TR', { minimumFractionDigits: 2 })} / ₺{totalCredit.toLocaleString('tr-TR', { minimumFractionDigits: 2 })}</p>
+          </div>
         </div>
       </Card>
     </div>

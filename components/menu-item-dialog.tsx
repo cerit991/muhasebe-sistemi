@@ -286,15 +286,15 @@ export function MenuItemDialog({ open, onOpenChange, onSuccess }: MenuItemDialog
                                   </span>
                                 </span>
                               ) : (
-                                "Select product..."
+                                "Ürün Seç"
                               )}
                               <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                             </Button>
                           </PopoverTrigger>
                           <PopoverContent className="w-[300px] p-0" align="start">
                             <Command>
-                              <CommandInput placeholder="Search product..." />
-                              <CommandEmpty>No product found.</CommandEmpty>
+                              <CommandInput placeholder="Ürün ara..." />
+                              <CommandEmpty>Ürün bulunamadı...</CommandEmpty>
                               <CommandGroup className="max-h-[200px] overflow-auto">
                                 {products.map((product) => (
                                   <CommandItem

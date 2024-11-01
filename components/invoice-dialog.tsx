@@ -294,7 +294,7 @@ export function InvoiceDialog({ open, onOpenChange, type, onSuccess }: InvoiceDi
       <DialogContent className="max-w-[1200px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>
-            {type === "purchase" ? "Purchase Invoice" : "Sales Invoice"}
+            {type === "purchase" ? "Alış Faturası" : "Satış Faturası"}
           </DialogTitle>
         </DialogHeader>
 
@@ -370,7 +370,7 @@ export function InvoiceDialog({ open, onOpenChange, type, onSuccess }: InvoiceDi
             <div className="flex justify-between items-center mb-4">
               <h3 className="text-lg font-medium">Stoklar</h3>
               <Button onClick={addNewItem}>
-                <Plus className="mr-2 h-4 w-4" /> Add Item
+                <Plus className="mr-2 h-4 w-4" /> Ürün ekle.
               </Button>
             </div>
 
@@ -411,15 +411,15 @@ export function InvoiceDialog({ open, onOpenChange, type, onSuccess }: InvoiceDi
                                   <span className="ml-2 text-muted-foreground">({item.productCode})</span>
                                 </span>
                               ) : (
-                                "Select product..."
+                                "Stok seç..."
                               )}
                               <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                             </Button>
                           </PopoverTrigger>
                           <PopoverContent className="w-[200px] p-0">
                             <Command>
-                              <CommandInput placeholder="Search product..." />
-                              <CommandEmpty>No product found.</CommandEmpty>
+                              <CommandInput placeholder="Ürün ara..." />
+                              <CommandEmpty>Ürün Bulunamadı...</CommandEmpty>
                               <CommandGroup className="max-h-[200px] overflow-auto">
                                 {products.map((product) => (
                                   <CommandItem

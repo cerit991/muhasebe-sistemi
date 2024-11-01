@@ -2,110 +2,129 @@ import jsPDF from 'jspdf'
 import autoTable from 'jspdf-autotable'
 import { format } from 'date-fns'
 import { tr } from 'date-fns/locale'
-
-interface Customer {
-  code: string
-  name: string
-  type: string
-  taxNumber: string
-  phone: string
-  balance: number
-}
-
-interface Transaction {
-  date: string
-  description: string
-  type: string
-  amount: number
-  paymentType: string
-  balance: number
-}
+import type { Customer, Transaction } from '@/types/statement'
 
 export function generateCustomerStatement(customer: Customer, transactions: Transaction[]) {
-  const doc = new jsPDF()
+  const doc = new jsPDF('p', 'pt', 'a4')
+  doc.addFont('Helvetica', 'Helvetica', 'normal')
+  doc.setFont('Helvetica')
+  
   const pageWidth = doc.internal.pageSize.getWidth()
-  const today = format(new Date(), 'dd MMMM yyyy', { locale: tr })
+  const today = format(new Date(), 'dd.MM.yyyy', { locale: tr })
 
   // Header
-  doc.setFontSize(20)
-  doc.text('Hesap Ekstresi', pageWidth / 2, 20, { align: 'center' })
   doc.setFontSize(10)
-  doc.text(`Tarih: ${today}`, pageWidth - 20, 30, { align: 'right' })
+  doc.text(``, 250, 20, { align: 'center' })
+  doc.text('', pageWidth - 50, 20)
+
+  // Title
+  doc.setFontSize(12)
+  doc.text('Cari Hesap Ekstresi', pageWidth / 2.5, 35, { align: 'center' })
 
   // Customer Info
-  doc.setFontSize(12)
-  doc.text('Cari Bilgileri', 20, 45)
   doc.setFontSize(10)
   doc.text([
-    `Cari Adı: ${customer.name}`,
-    `Cari Kodu: ${customer.code}`,
-    `Vergi No: ${customer.taxNumber}`,
-    `Telefon: ${customer.phone}`,
-    `Tip: ${customer.type === 'customer' ? 'Müşteri' : 'Tedarikçi'}`,
-    `Bakiye: ₺${customer.balance.toLocaleString('tr-TR', { minimumFractionDigits: 2 })}`
-  ], 20, 55)
+    `Cari      : ${customer.name}`,
+    `Hesap Kodu : ${customer.code}`,
+    `Telefon    : ${customer.phone}`,
+    `VKN       : ${customer.taxNumber}`,
+    `Tipi      : ${customer.type === 'customer' ? 'Müşteri' : 'Tedarikçi'}`
+  ], 20, 45)
+
+  // Date Range
+  doc.text([
+    `ilk : ${format(new Date(transactions[transactions.length - 1].date), 'dd.MM.yyyy', { locale: tr })}`,
+    `son: ${format(new Date(transactions[0].date), 'dd.MM.yyyy', { locale: tr })}`,
+  ], pageWidth - 75, 23)
+
+  // Calculate totals
+  const totalDebit = transactions
+    .filter(t => t.type === 'debit')
+    .reduce((sum, t) => sum + t.amount, 0)
+
+  const totalCredit = transactions
+    .filter(t => t.type === 'credit')
+    .reduce((sum, t) => sum + t.amount, 0)
 
   // Transactions Table
   autoTable(doc, {
-    startY: 90,
+    startY: 100,
     head: [[
       'Tarih',
+      'Fis No',
+      'Türü',
+      'Belge No',
       'Açıklama',
-      'İşlem Türü',
-      'Ödeme Şekli',
-      'Tutar',
+      'Borç',
+      'Alacak',
       'Bakiye'
     ]],
     body: transactions.map(t => [
-      format(new Date(t.date), 'dd.MM.yyyy'),
+      format(new Date(t.date), 'dd.MM.yyyy', { locale: tr }),
+      t.documentNo || '-',
+      t.type === 'debit' ? 'Borç' : 'Alacak',
+      t.documentNo || '-',
       t.description,
-      t.type === 'income' ? 'Tahsilat' : 'Ödeme',
-      getPaymentTypeText(t.paymentType),
-      `₺${t.amount.toLocaleString('tr-TR', { minimumFractionDigits: 2 })}`,
-      `₺${t.balance.toLocaleString('tr-TR', { minimumFractionDigits: 2 })}`
+      t.type === 'debit' ? `${t.amount.toLocaleString('tr-TR', { minimumFractionDigits: 2 })}` : '',
+      t.type === 'credit' ? `${t.amount.toLocaleString('tr-TR', { minimumFractionDigits: 2 })}` : '',
+      `${Math.abs(t.balance).toLocaleString('tr-TR', { minimumFractionDigits: 2 })} ${t.balance >= 0 ? '(A)' : '(B)'}`
     ]),
     styles: {
+      font: 'Helvetica',
       fontSize: 8,
-      cellPadding: 2
+      cellPadding: 2,
     },
     headStyles: {
-      fillColor: [66, 66, 66]
+      fillColor: [200, 200, 200],
+      textColor: [0, 0, 0],
+      fontStyle: 'bold',
+      halign: 'center'
     },
     columnStyles: {
-      4: { halign: 'right' },
-      5: { halign: 'right' }
+      0: { halign: 'center' }, // Tarih
+      1: { halign: 'center' }, // Fiş No
+      2: { halign: 'center' }, // Türü
+      3: { halign: 'center' }, // Belge No
+      4: { halign: 'left' },   // Açıklama
+      5: { halign: 'right' },  // Borç
+      6: { halign: 'right' },  // Alacak
+      7: { halign: 'right' }   // Bakiye
+    },
+    theme: 'grid',
+    didParseCell: function(data) {
+      if (data.section === 'head') {
+        data.cell.styles.halign = 'center'
+      }
     }
   })
 
-  // Footer
-  const pageCount = (doc as any).internal.getNumberOfPages()
+  // Footer with totals
+  const finalY = (doc as any).lastAutoTable.finalY || 90
   doc.setFontSize(8)
-  for (let i = 1; i <= pageCount; i++) {
-    doc.setPage(i)
-    doc.text(
-      `Sayfa ${i} / ${pageCount}`,
-      pageWidth / 2,
-      doc.internal.pageSize.getHeight() - 10,
-      { align: 'center' }
-    )
-  }
+
+  // Left aligned labels
+  doc.text([
+    `Listelenen: ${transactions.length}`,
+  ], 20, finalY + 20)
+
+  // Right aligned totals with labels
+  const totalsY = finalY + 20
+  const totalsX = pageWidth - 20
+
+  // Borç column totals
+  doc.text([
+    `${totalDebit.toLocaleString('tr-TR', { minimumFractionDigits: 2 })}`,
+  ], pageWidth - 150, totalsY, { align: 'right' })
+
+  // Alacak column totals
+  doc.text([
+    `${totalCredit.toLocaleString('tr-TR', { minimumFractionDigits: 2 })}`,
+  ], pageWidth - 105, totalsY, { align: 'right' })
+
+  // Bakiye column totals
+  doc.text([
+    `${Math.abs(customer.balance).toLocaleString('tr-TR', { minimumFractionDigits: 2 })} ${customer.balance >= 0 ? '(A)' : '(B)'}`,
+  ], pageWidth - 40, totalsY, { align: 'right' })
 
   return doc
-}
-
-function getPaymentTypeText(type: string): string {
-  switch (type) {
-    case 'cash':
-      return 'Nakit'
-    case 'credit_card':
-      return 'Kredi Kartı'
-    case 'bank_transfer':
-      return 'Banka Transferi'
-    case 'check':
-      return 'Çek'
-    case 'promissory_note':
-      return 'Senet'
-    default:
-      return type
-  }
 }

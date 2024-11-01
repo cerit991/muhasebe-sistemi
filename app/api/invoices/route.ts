@@ -1,37 +1,5 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
-import { format } from 'date-fns'
-
-// Helper function to generate next invoice number
-async function generateInvoiceNumber(type: 'sale' | 'purchase'): Promise<string> {
-  const today = new Date()
-  const year = today.getFullYear()
-  const month = (today.getMonth() + 1).toString().padStart(2, '0')
-  const prefix = type === 'sale' ? 'INV' : 'PUR'
-  
-  // Get the last invoice for this type and month
-  const lastInvoice = await prisma.invoice.findFirst({
-    where: {
-      type,
-      number: {
-        startsWith: `${prefix}${year}${month}`
-      }
-    },
-    orderBy: {
-      number: 'desc'
-    }
-  })
-
-  let sequence = 1
-  if (lastInvoice) {
-    // Extract sequence number from last invoice
-    const lastSequence = parseInt(lastInvoice.number.slice(-4))
-    sequence = lastSequence + 1
-  }
-
-  // Format: INV/PUR + YYYYMM + 4-digit sequence
-  return `${prefix}${year}${month}${sequence.toString().padStart(4, '0')}`
-}
 
 export async function GET() {
   try {
@@ -59,20 +27,29 @@ export async function GET() {
 export async function POST(request: Request) {
   try {
     const body = await request.json()
-    const { type, invoiceDate, customerId, items, totals } = body
+    const { type, invoiceDate, customerId, items, totals, invoiceNumber } = body
 
-    if (!type || !invoiceDate || !customerId || !items || !totals) {
+    if (!type || !invoiceDate || !customerId || !items || !totals || !invoiceNumber) {
       return NextResponse.json(
         { error: 'Required fields are missing' },
         { status: 400 }
       )
     }
 
-    // Generate unique invoice number
-    const invoiceNumber = await generateInvoiceNumber(type)
+    // Fatura numarasının benzersiz olup olmadığını kontrol et
+    const existingInvoice = await prisma.invoice.findUnique({
+      where: { number: invoiceNumber }
+    })
+
+    if (existingInvoice) {
+      return NextResponse.json(
+        { error: 'Bu fatura numarası zaten kullanılmış' },
+        { status: 400 }
+      )
+    }
 
     // Start a transaction to ensure data consistency
-    const result = await prisma.$transaction(async (tx: { invoice: { create: (arg0: { data: { number: string; type: any; date: Date; customerId: any; subtotal: any; vatTotal: any; total: any; status: string; items: { create: any } }; include: { customer: boolean; items: { include: { product: boolean } } } }) => any }; customer: { update: (arg0: { where: { id: any }; data: { balance: { [x: string]: any } } }) => any }; product: { update: (arg0: { where: { id: any } | { id: any }; data: { price: any; quantity: { increment: any } } | { quantity: { decrement: any } } }) => any } }) => {
+    const result = await prisma.$transaction(async (tx) => {
       // Create the invoice
       const invoice = await tx.invoice.create({
         data: {
@@ -105,11 +82,13 @@ export async function POST(request: Request) {
         }
       })
 
-      // Update customer balance based on invoice type
+      // Update customer balance
       await tx.customer.update({
         where: { id: customerId },
         data: {
           balance: {
+            // For purchases (supplier invoices), increase balance (we owe them money)
+            // For sales (customer invoices), decrease balance (they owe us money)
             [type === 'purchase' ? 'increment' : 'decrement']: totals.total
           }
         }
@@ -122,9 +101,9 @@ export async function POST(request: Request) {
           await tx.product.update({
             where: { id: item.productId },
             data: {
-              price: item.price,
+              price: item.price, // Update price from purchase invoice
               quantity: {
-                increment: item.quantity
+                increment: item.quantity // Increase stock
               }
             }
           })
@@ -150,7 +129,7 @@ export async function POST(request: Request) {
   } catch (error) {
     console.error('Invoice creation error:', error)
     return NextResponse.json(
-      { error: 'Failed to create invoice' },
+      { error: error instanceof Error ? error.message : 'Failed to create invoice' },
       { status: 500 }
     )
   }
